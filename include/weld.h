@@ -1,10 +1,22 @@
-#ifndef weldH__
-#define weldH__
+#ifndef WELD_H__
+#define WELD_H__
+
+#include <stdbool.h>
 
 struct weld_config {
-  _Bool verbose;
+  bool verbose;
+
+  // run dry mode only when this is true
+  // if dry is true it will only display a
+  // preview of actions that will be taken
+  bool dry;
 };
 
-int weld_main(struct weld_config *cfg);
+// global cfg
+extern struct weld_config weldcfg;
 
-#endif 
+int weld_main(struct weld_config cfg);
+
+struct weld_config weld_config_from_env(void);
+
+#endif

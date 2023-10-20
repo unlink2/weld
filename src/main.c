@@ -14,7 +14,6 @@ struct arg_end *end = NULL;
 #define weld_argtable                                                          \
   { help, version, verb, end, }
 
-
 void weld_args_free(void) {
   void *argtable[] = weld_argtable;
   arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
@@ -60,25 +59,20 @@ void weld_args_parse(int argc, char **argv) {
     exitcode = 1;
     goto exit;
   }
-  
+
   return;
 exit:
   weld_args_free();
   exit(exitcode); // NOLINT
 }
 
-
-
 int main(int argc, char **argv) {
   weld_args_parse(argc, argv);
-  
-  // map args to cfg here 
-  struct weld_config cfg;
-  memset(&cfg, 0, sizeof(cfg));
 
-  cfg.verbose = verb->count > 0;
+  // map args to cfg here
+  struct weld_config cfg = weld_config_from_env();
 
-  int res = weld_main(&cfg);
+  int res = weld_main(cfg);
 
   weld_args_free();
   return res;
