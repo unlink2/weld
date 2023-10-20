@@ -22,20 +22,26 @@
   Lines starting with a # as the first non-whitespace character are ignored!
   All other lines are interpreted according to the following format:
 
-  action
-  source
-  target
+  act action
+  src source
+  tar target
+  end
 
   Each new paramter is in a separate line to simplify parsing and generation of 
   configurations.
 
-  Action is a single letter command to execute. Valid actions are:
-  s
-    Create symbolic link
+  Action is a single letter command to execute. 
+  The default action is symlink if not specified.
+  Valid actions are:
+  symlink
+    Create symbolic link.
+    S requires the following parameters: src, tar
   
   Source is the path to the configuration file.
 
   Target is the target paht of the link.
+
+  End ends a command list and begins the next.
   
 
 .SH EXAMPLES
