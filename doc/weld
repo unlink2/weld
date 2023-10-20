@@ -9,6 +9,7 @@
   weld [-v] [--help] [--version]
 .SH DESCRIPTION
   weld
+  A simple symbolic link manager.
 
   --help                    
     display this help and exit
@@ -16,7 +17,27 @@
     display version info and exit
   -v, --verbose             
     verbose output
+
+  Weld reads instructions from stdin.
+  Lines starting with a # as the first non-whitespace character are ignored!
+  All other lines are interpreted according to the following format:
+
+  action
+  source
+  target
+
+  Each new paramter is in a separate line to simplify parsing and generation of 
+  configurations.
+
+  Action is a single letter command to execute. Valid actions are:
+  s
+    Create symbolic link
   
+  Source is the path to the configuration file.
+
+  Target is the target paht of the link.
+  
+
 .SH EXAMPLES
  
 .SH SEE ALSO
