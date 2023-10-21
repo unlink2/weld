@@ -20,6 +20,12 @@ struct weld_config weld_config_from_env(void) {
 }
 
 int weld_commtok(char *dst, const char *src, size_t len) {
+  if (weldcfg.verbose) {
+    fprintf(stderr, "[commtok] Parsing '%s'. max len %ld\n", src, len);
+  }
+
+  char *dst_start = dst;
+
   assert(len);
 
   size_t lenm1 = len - 1;
@@ -43,10 +49,21 @@ int weld_commtok(char *dst, const char *src, size_t len) {
 
   *dst = '\0';
 
-  if (i >= lenm1) {
+  if (weldcfg.verbose) {
+    fprintf(stderr,
+            "[commtok] Result: '%s'. %d bytes read. Reamining source: '%s'\n",
+            dst_start, i, src);
+  }
+
+  if (*src && *src != WELD_COMM_TERM) {
     fprintf(stderr, "The supplied buffer did not provide enough memory to fit "
                     "the entire token!\n");
     return -1;
+  }
+
+  // advance past the separator
+  if (*src == WELD_COMM_TERM) {
+    i++;
   }
 
   return i;
@@ -54,15 +71,9 @@ int weld_commtok(char *dst, const char *src, size_t len) {
 
 struct weld_comm weld_commfrom(const char *line) {
   size_t read = 0;
-  const size_t typebuflen = 2;
+  const size_t typebuflen = 3;
   char typebuf[typebuflen];
   memset(typebuf, 0, typebuflen);
-
-  char srcbuf[WELD_PATH_MAX];
-  memset(srcbuf, 0, WELD_PATH_MAX);
-
-  char dstbuf[WELD_PATH_MAX];
-  memset(dstbuf, 0, WELD_PATH_MAX);
 
   struct weld_comm comm;
   memset(&comm, 0, sizeof(comm));
@@ -89,6 +100,17 @@ struct weld_comm weld_commfrom(const char *line) {
   switch (typebuf[0]) {
   case WELD_COMM_SYMLINK:
     comm.type = WELD_COMM_SYMLINK;
+    line += read;
+    read = weld_commtok(comm.src, line, WELD_PATH_MAX);
+    if (read == -1) {
+      goto FAIL;
+    }
+
+    line += read;
+    read = weld_commtok(comm.dst, line, WELD_PATH_MAX);
+    if (read == -1) {
+      goto FAIL;
+    }
     break;
   default:
     fprintf(stderr, "Unknown command type: '%c'\n", typebuf[0]);
