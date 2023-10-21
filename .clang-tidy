@@ -20,7 +20,8 @@ Checks: "*,
   -readability-function-cognitive-complexity,
   -altera-id-dependent-backward-branch,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
-  -misc-no-recursion
+  -misc-no-recursion,
+  -concurrency-mt-unsafe
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

@@ -5,8 +5,8 @@ CC=gcc
 DBGCFLAGS=-g -fsanitize=address
 DBGLDFLAGS=-fsanitize=address 
 CFLAGS=-I$(IDIR) -Wall -pedantic $(DBGCFLAGS)
-LIBS=-largtable2
-TEST_LIBS=-lcmocka
+LIBS=
+TEST_LIBS=
 LDFLAGS=$(DBGLDFLAGS) $(LIBS)
 
 ODIR=obj

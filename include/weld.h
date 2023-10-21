@@ -15,7 +15,13 @@
 #define WELD_COMM_TERM ':'
 #define WELD_COMM_ESCAPE '\\'
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 struct weld_config {
+  char **argv;
+  int argc;
+
   bool verbose;
 
   // run dry mode only when this is true
