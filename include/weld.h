@@ -66,6 +66,7 @@ struct weld_config weld_config_from_env(void);
 struct weld_comm weld_commfrom(const char *line);
 
 // writes the next token into dst and returns the number of bytes read
-size_t weld_commtok(char *dst, const char *src, size_t len);
+// returns -1 on error (e.g. if dst's size is insufficient)
+int weld_commtok(char *dst, const char *src, size_t len);
 
 #endif
