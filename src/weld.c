@@ -93,7 +93,7 @@ struct weld_comm weld_commfrom(const char *line) {
 
   // not a comment, read all required args
   read = weld_commtok(typebuf, line, typebuflen);
-  if (read == -1) {
+  if (read <= 0) {
     goto FAIL;
   }
 
@@ -102,14 +102,19 @@ struct weld_comm weld_commfrom(const char *line) {
     comm.type = WELD_COMM_SYMLINK;
     line += read;
     read = weld_commtok(comm.src, line, WELD_PATH_MAX);
-    if (read == -1) {
+    if (read <= 0) {
       goto FAIL;
     }
 
     line += read;
     read = weld_commtok(comm.dst, line, WELD_PATH_MAX);
-    if (read == -1) {
+    if (read <= 0) {
       goto FAIL;
+    }
+
+    if (weldcfg.verbose) {
+      fprintf(stderr, "[commfrom] read symlink with src: '%s' and dst: '%s'\n",
+              comm.src, comm.dst);
     }
     break;
   default:

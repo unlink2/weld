@@ -52,8 +52,10 @@ struct weld_comm {
   int ok;
   enum weld_comms type;
   union {
-    char src[WELD_PATH_MAX];
-    char dst[WELD_PATH_MAX];
+    struct {
+      char src[WELD_PATH_MAX];
+      char dst[WELD_PATH_MAX];
+    };
   };
 };
 

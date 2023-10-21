@@ -36,18 +36,33 @@ void test_commpath(void) {
   {                                                                            \
     struct weld_comm c = weld_commfrom((line));                                \
     assert((expect_ok) == c.ok);                                               \
+    assert((WELD_COMM_SYMLINK) == c.type);                                     \
+    assert(strcmp((expect_src), c.src) == 0);                                  \
+    assert(strcmp((expect_dst), c.dst) == 0);                                  \
+  }
+
+#define assert_commfrom_nop(line, expect_ok)                                   \
+  {                                                                            \
+    struct weld_comm c = weld_commfrom((line));                                \
+    assert((expect_ok) == c.ok);                                               \
+    assert((WELD_COMM_NOP) == c.type);                                         \
   }
 
 void test_commfrom(void) {
   puts("[commfrom test]");
 
-  assert_commfrom_sl("", "", 0, "s:source/path:dest/path");
+  assert_commfrom_sl("source/path", "dest/path", 0, "s:source/path:dest/path");
+  assert_commfrom_sl("source/path", "", -1, "s:source/path");
+  assert_commfrom_sl("", "", -1, "s");
+
+  assert_commfrom_nop("# comment", 0);
+  assert_commfrom_nop("   # comment", 0);
 
   puts("[commfrom ok]");
 }
 
 int main(int arc, char **argv) {
-  weldcfg.verbose = true;
+  weldcfg.verbose = false;
 
   test_commpath();
   test_commfrom();
