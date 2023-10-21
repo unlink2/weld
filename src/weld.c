@@ -15,3 +15,12 @@ struct weld_config weld_config_from_env(void) {
 
   return cfg;
 }
+
+struct weld_comm weld_commfrom(const char *line) {
+  struct weld_comm comm;
+  memset(&comm, 0, sizeof(comm));
+  comm.ok = -1;
+  comm.type = WELD_COMM_NOP;
+
+  return comm;
+}
