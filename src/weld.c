@@ -1,4 +1,5 @@
 #include "weld.h"
+#include <assert.h>
 #include <string.h>
 
 struct weld_config weldcfg;
@@ -14,6 +15,31 @@ struct weld_config weld_config_from_env(void) {
   memset(&cfg, 0, sizeof(cfg));
 
   return cfg;
+}
+
+char *weld_commpath(char *dst, const char *src, size_t len) {
+  assert(len);
+
+  size_t i = 0;
+  char prev = '\0';
+  while (i < (len - 1) &&
+         (prev == WELD_COMM_ESCAPE || *src != WELD_COMM_TERM) && *src) {
+    if (prev != WELD_COMM_ESCAPE && *src == WELD_COMM_ESCAPE) {
+      prev = *src;
+      src++;
+      continue;
+    }
+
+    prev = *src;
+    *dst = *src;
+    dst++;
+    src++;
+    i++;
+  }
+
+  *dst = '\0';
+
+  return dst;
 }
 
 struct weld_comm weld_commfrom(const char *line) {

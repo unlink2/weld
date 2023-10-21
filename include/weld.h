@@ -2,6 +2,7 @@
 #define WELD_H__
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __linux__
 #include <linux/limits.h>
@@ -10,6 +11,9 @@
 // TODO: get limits for other systems
 #define WELD_PATH_MAX 4096
 #endif
+
+#define WELD_COMM_TERM ':'
+#define WELD_COMM_ESCAPE '\\'
 
 struct weld_config {
   bool verbose;
@@ -54,5 +58,7 @@ int weld_main(struct weld_config cfg);
 struct weld_config weld_config_from_env(void);
 
 struct weld_comm weld_commfrom(const char *line);
+
+char *weld_commpath(char *dst, const char *src, size_t len);
 
 #endif
