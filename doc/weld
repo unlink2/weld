@@ -19,16 +19,10 @@
     verbose output
 
   Weld reads instructions from stdin.
+  Characters can be escaped using \ e.g. \: will insert : as the value. 
   Lines starting with a # as the first non-whitespace character are ignored!
-  All other lines are interpreted according to the following format:
-
-  act action
-  src source
-  tar target
-  end
-
-  Each new paramter is in a separate line to simplify parsing and generation of 
-  configurations.
+  
+  action:source:target
 
   Action is a single letter command to execute. 
   The default action is symlink if not specified.
@@ -40,8 +34,6 @@
   Source is the path to the configuration file.
 
   Target is the target paht of the link.
-
-  End ends a command list and begins the next.
   
 
 .SH EXAMPLES
