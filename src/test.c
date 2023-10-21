@@ -16,6 +16,7 @@ void test_commpath(void) {
   assert_commpath("test", 4, "test", buf, len);
   assert_commpath("tes:t", 6, "tes\\:t", buf, len);
   assert_commpath("test", 4, "test:123", buf, len);
+  assert_commpath("", 0, "", buf, len);
 
   // error case: buffer cannot fit entire token
   assert_commpath("tes", -1, "test:123", buf, 4);

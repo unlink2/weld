@@ -14,6 +14,7 @@
 
 #define WELD_COMM_TERM ':'
 #define WELD_COMM_ESCAPE '\\'
+#define WELD_COMM_COMMENT '#'
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))

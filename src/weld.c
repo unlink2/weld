@@ -1,5 +1,6 @@
 #include "weld.h"
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -52,10 +53,50 @@ int weld_commtok(char *dst, const char *src, size_t len) {
 }
 
 struct weld_comm weld_commfrom(const char *line) {
+  size_t read = 0;
+  const size_t typebuflen = 2;
+  char typebuf[typebuflen];
+  memset(typebuf, 0, typebuflen);
+
+  char srcbuf[WELD_PATH_MAX];
+  memset(srcbuf, 0, WELD_PATH_MAX);
+
+  char dstbuf[WELD_PATH_MAX];
+  memset(dstbuf, 0, WELD_PATH_MAX);
+
   struct weld_comm comm;
   memset(&comm, 0, sizeof(comm));
   comm.ok = -1;
   comm.type = WELD_COMM_NOP;
 
+  // decide if this is a comment
+  {
+    size_t i = 0;
+    while (line[i] && isspace(line[i])) {
+      i++;
+    }
+    if (line[i] == WELD_COMM_COMMENT) {
+      goto SKIP_COMMENT;
+    }
+  }
+
+  // not a comment, read all required args
+  read = weld_commtok(typebuf, line, typebuflen);
+  if (read == -1) {
+    goto FAIL;
+  }
+
+  switch (typebuf[0]) {
+  case WELD_COMM_SYMLINK:
+    comm.type = WELD_COMM_SYMLINK;
+    break;
+  default:
+    fprintf(stderr, "Unknown command type: '%c'\n", typebuf[0]);
+    goto FAIL;
+  }
+
+SKIP_COMMENT:
+  comm.ok = 0;
+FAIL:
   return comm;
 }
