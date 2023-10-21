@@ -40,6 +40,11 @@ struct weld_config {
 
   // replace exiting links or files
   bool replace;
+
+  // calls wordexp(3) on each line read by the input
+  // this allows the use of shell-variables in the 
+  // declaration
+  bool expand;
 };
 
 enum weld_comms {
