@@ -18,15 +18,14 @@ struct weld_config weld_config_from_env(void) {
   return cfg;
 }
 
-char *weld_commpath(char *dst, const char *src, size_t len) {
+size_t weld_commtok(char *dst, const char *src, size_t len) {
   assert(len);
-
-  char *dst_start = dst;
 
   size_t i = 0;
   char prev = '\0';
   while (i < (len - 1) && *src &&
          (prev == WELD_COMM_ESCAPE || *src != WELD_COMM_TERM)) {
+    i++;
     if (prev != WELD_COMM_ESCAPE && *src == WELD_COMM_ESCAPE) {
       prev = *src;
       src++;
@@ -37,12 +36,11 @@ char *weld_commpath(char *dst, const char *src, size_t len) {
     *dst = *src;
     dst++;
     src++;
-    i++;
   }
 
   *dst = '\0';
-
-  return dst_start;
+  
+  return i;
 }
 
 struct weld_comm weld_commfrom(const char *line) {

@@ -65,6 +65,7 @@ struct weld_config weld_config_from_env(void);
 
 struct weld_comm weld_commfrom(const char *line);
 
-char *weld_commpath(char *dst, const char *src, size_t len);
+// writes the next token into dst and returns the number of bytes read
+size_t weld_commtok(char *dst, const char *src, size_t len);
 
 #endif

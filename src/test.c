@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#define assert_commpath(expect, src, buf, len)                                 \
-  assert(strcmp((expect), weld_commpath((buf), (src), (len))) == 0);
+#define assert_commpath(expect_str, expect_read, src, buf, len)                \
+  assert(weld_commtok((buf), (src), (len)) == expect_read);                    \
+  assert(strcmp((expect_str), (buf)) == 0);
 
 void test_commpath(void) {
   puts("[commpath test]");
@@ -12,9 +13,9 @@ void test_commpath(void) {
   const int len = 128;
   char buf[len];
 
-  assert_commpath("test", "test", buf, len);
-  assert_commpath("tes:t", "tes\\:t", buf, len);
-  assert_commpath("test", "test:123", buf, len);
+  assert_commpath("test", 4, "test", buf, len);
+  assert_commpath("tes:t", 6, "tes\\:t", buf, len);
+  assert_commpath("test", 4, "test:123", buf, len);
 
   puts("[commpath ok]");
 }
