@@ -42,7 +42,7 @@ struct weld_config {
   bool replace;
 
   // calls wordexp(3) on each line read by the input
-  // this allows the use of shell-variables in the 
+  // this allows the use of shell-variables in the
   // declaration
   bool expand;
 };
@@ -71,6 +71,14 @@ int weld_main(struct weld_config cfg);
 
 struct weld_config weld_config_from_env(void);
 
+// calls wordexp(3) on the input line.
+// Returns an array of strings.
+// The resulting strings are heap allocated and needs to be cleaned up
+// using free(2)
+char **weld_wordexp(const char *line, size_t *len);
+void weld_wordexp_free(char **lines, size_t len);
+
+// creates a command from a line
 struct weld_comm weld_commfrom(const char *line);
 
 // writes the next token into dst and returns the number of bytes read

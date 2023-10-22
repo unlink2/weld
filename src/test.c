@@ -1,6 +1,7 @@
 #include "weld.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define assert_commpath(expect_str, expect_read, src, buf, len)                \
@@ -48,6 +49,12 @@ void test_commpath(void) {
     assert((WELD_COMM_NOP) == c.type);                                         \
   }
 
+#define assert_commfrom_inval(line, expect_ok)                                 \
+  {                                                                            \
+    struct weld_comm c = weld_commfrom((line));                                \
+    assert((expect_ok) == c.ok);                                               \
+  }
+
 void test_commfrom(void) {
   puts("[commfrom test]");
 
@@ -58,7 +65,30 @@ void test_commfrom(void) {
   assert_commfrom_nop("# comment", 0);
   assert_commfrom_nop("   # comment", 0);
 
+  assert_commfrom_inval("", -1);
+  assert_commfrom_inval("-", -1);
+  assert_commfrom_inval("---", -1);
+
   puts("[commfrom ok]");
+}
+
+#define assert_wordexp(expectv0, expect_len, line)                             \
+  {                                                                            \
+    size_t len = 0;                                                            \
+    char **res = weld_wordexp((line), &len);                                   \
+    assert(len == (expect_len));                                               \
+    assert(strcmp(expectv0, res[0]) == 0);                                     \
+    weld_wordexp_free(res, len);                                               \
+  }
+
+void test_wordexp(void) {
+  puts("[wordexp test]");
+
+  setenv("WELD_TEST", "123", 0);
+  assert_wordexp("s:/path/123:/path2/123", 1,
+                 "s:/path/$WELD_TEST:/path2/$WELD_TEST");
+
+  puts("[wordexp ok]");
 }
 
 int main(int arc, char **argv) {
@@ -66,6 +96,7 @@ int main(int arc, char **argv) {
 
   test_commpath();
   test_commfrom();
+  test_wordexp();
 
   return 0;
 }

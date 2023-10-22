@@ -2,7 +2,9 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <wordexp.h>
 
 struct weld_config weldcfg;
 
@@ -17,6 +19,34 @@ struct weld_config weld_config_from_env(void) {
   memset(&cfg, 0, sizeof(cfg));
 
   return cfg;
+}
+
+char **weld_wordexp(const char *line, size_t *len) {
+  wordexp_t p;
+  char **w = NULL;
+
+  if (wordexp(line, &p, WRDE_NOCMD) != 0) {
+    fprintf(stderr, "wprdexp failed\n");
+    goto FAIL;
+  }
+
+  w = malloc(sizeof(char *) * p.we_wordc);
+  *len = p.we_wordc;
+
+  for (size_t i = 0; i < p.we_wordc; i++) {
+    w[i] = strdup(p.we_wordv[i]);
+  }
+FAIL:
+  wordfree(&p);
+  return w;
+}
+
+void weld_wordexp_free(char **lines, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    free(lines[i]);
+  }
+
+  free(lines);
 }
 
 int weld_commtok(char *dst, const char *src, size_t len) {
