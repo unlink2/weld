@@ -44,7 +44,7 @@ struct weld_config {
   bool mkdirs;
 
   // replace exiting links or files
-  bool replace;
+  bool force;
 
   // calls wordexp(3) on each line read by the input
   // this allows the use of shell-variables in the
