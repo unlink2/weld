@@ -17,9 +17,13 @@ int weld_main(struct weld_config cfg) {
   return 0;
 }
 
-int weld_commchk(struct weld_comm *comm) {
+struct weld_commchk weld_commchk(struct weld_comm *comm) {
+  struct weld_commchk chk;
+  memset(&chk, 0, sizeof(chk));
+  chk.ok = -1;
+
   if (comm->ok == -1) {
-    return -1;
+    goto FAIL;
   }
 
   //  check will only print detailed non-error information
@@ -36,12 +40,15 @@ int weld_commchk(struct weld_comm *comm) {
     break;
   }
 
-  return 0;
+  chk.ok = 0;
+FAIL:
+  return chk;
 }
 
 int weld_commdo(const char *line) {
   struct weld_comm c = weld_commfrom(line);
-  if (weld_commchk(&c) == -1) {
+  struct weld_commchk chk = weld_commchk(&c);
+  if (chk.ok == -1) {
     return -1;
   }
 
