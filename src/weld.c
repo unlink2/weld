@@ -227,6 +227,8 @@ struct weld_comm weld_commfrom(const char *line) {
 
 SKIP_COMMENT:
   comm.ok = 0;
+  return comm;
 FAIL:
+  fprintf(welderr, "Parsing command '%s' failed\n", line);
   return comm;
 }
