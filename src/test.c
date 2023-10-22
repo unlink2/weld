@@ -68,6 +68,8 @@ void test_commfrom(void) {
   assert_commfrom_inval("", -1);
   assert_commfrom_inval("-", -1);
   assert_commfrom_inval("---", -1);
+  assert_commfrom_inval("sl", -1);
+  assert_commfrom_inval("sll", -1);
 
   puts("[commfrom ok]");
 }

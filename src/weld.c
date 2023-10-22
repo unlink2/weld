@@ -173,7 +173,9 @@ int weld_commtok(char *dst, const char *src, size_t len) {
 }
 
 struct weld_comm weld_commfrom(const char *line) {
-  size_t read = 0;
+  const char *line_start = line;
+
+  int read = 0;
   const size_t typebuflen = 3;
   char typebuf[typebuflen];
   memset(typebuf, 0, typebuflen);
@@ -229,6 +231,6 @@ SKIP_COMMENT:
   comm.ok = 0;
   return comm;
 FAIL:
-  fprintf(welderr, "Parsing command '%s' failed\n", line);
+  fprintf(welderr, "Parsing command '%s' failed\n", line_start);
   return comm;
 }
