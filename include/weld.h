@@ -64,9 +64,30 @@ struct weld_comm {
   int ok;
   enum weld_comms type;
   union {
+    // type symlink
     struct {
       char src[WELD_PATH_MAX];
       char dst[WELD_PATH_MAX];
+    };
+  };
+};
+
+// file stat results
+struct weld_stat {
+  int ok;
+  bool exists;
+};
+
+// result of chk
+// this determines what running a command will do
+struct weld_commchk {
+  int ok;
+  enum weld_comms type;
+  union {
+    // type symlink
+    struct {
+      struct weld_stat src;
+      struct weld_stat dst;
     };
   };
 };
