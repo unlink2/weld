@@ -17,8 +17,19 @@ int weld_main(struct weld_config cfg) {
   return 0;
 }
 
-int weld_commdo(const char *comm) {
-  puts(comm);
+int weld_commchk(struct weld_comm *comm) {
+  if (comm->ok == -1) {
+    return -1;
+  }
+
+  return 0;
+}
+
+int weld_commdo(const char *line) {
+  struct weld_comm c = weld_commfrom(line);
+  if (weld_commchk(&c) == -1) {
+    return -1;
+  }
   return 0;
 }
 
