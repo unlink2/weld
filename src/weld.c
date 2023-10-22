@@ -22,6 +22,20 @@ int weld_commchk(struct weld_comm *comm) {
     return -1;
   }
 
+  //  check will only print detailed non-error information
+  //  if in a dry run or verbose
+  bool display = weldcfg.dry || weldcfg.verbose;
+
+  switch (comm->type) {
+  case WELD_COMM_SYMLINK:
+    if (display) {
+      fprintf(weldout, "symlink ");
+    }
+    break;
+  case WELD_COMM_NOP:
+    break;
+  }
+
   return 0;
 }
 
@@ -30,6 +44,12 @@ int weld_commdo(const char *line) {
   if (weld_commchk(&c) == -1) {
     return -1;
   }
+
+  // do not proceed in a dry run
+  if (weldcfg.dry) {
+    return 0;
+  }
+
   return 0;
 }
 
