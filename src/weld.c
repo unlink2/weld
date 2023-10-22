@@ -7,9 +7,17 @@
 #include <wordexp.h>
 
 struct weld_config weldcfg;
+#define weldin stdin
+#define weldout stdout
+#define welderr stderr
 
 int weld_main(struct weld_config cfg) {
   weldcfg = cfg;
+  return 0;
+}
+
+int weld_commnext(void) {
+  // read a line from in
 
   return 0;
 }
@@ -26,7 +34,7 @@ char **weld_wordexp(const char *line, size_t *len) {
   char **w = NULL;
 
   if (wordexp(line, &p, WRDE_NOCMD) != 0) {
-    fprintf(stderr, "wprdexp failed\n");
+    fprintf(welderr, "wprdexp failed\n");
     goto FAIL;
   }
 
@@ -51,7 +59,7 @@ void weld_wordexp_free(char **lines, size_t len) {
 
 int weld_commtok(char *dst, const char *src, size_t len) {
   if (weldcfg.verbose) {
-    fprintf(stderr, "[commtok] Parsing '%s'. max len %ld\n", src, len);
+    fprintf(welderr, "[commtok] Parsing '%s'. max len %ld\n", src, len);
   }
 
   char *dst_start = dst;
@@ -80,14 +88,14 @@ int weld_commtok(char *dst, const char *src, size_t len) {
   *dst = '\0';
 
   if (weldcfg.verbose) {
-    fprintf(stderr,
+    fprintf(welderr,
             "[commtok] Result: '%s'. %d bytes read. Reamining source: '%s'\n",
             dst_start, i, src);
   }
 
   if (*src && *src != WELD_COMM_TERM) {
-    fprintf(stderr, "The supplied buffer did not provide enough memory to fit "
-                    "the entire token!\n");
+    fprintf(welderr, "The supplied buffer did not provide enough memory to fit "
+                     "the entire token!\n");
     return -1;
   }
 
@@ -143,12 +151,12 @@ struct weld_comm weld_commfrom(const char *line) {
     }
 
     if (weldcfg.verbose) {
-      fprintf(stderr, "[commfrom] read symlink with src: '%s' and dst: '%s'\n",
+      fprintf(welderr, "[commfrom] read symlink with src: '%s' and dst: '%s'\n",
               comm.src, comm.dst);
     }
     break;
   default:
-    fprintf(stderr, "Unknown command type: '%c'\n", typebuf[0]);
+    fprintf(welderr, "Unknown command type: '%c'\n", typebuf[0]);
     goto FAIL;
   }
 

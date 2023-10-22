@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #ifdef __linux__
 #include <linux/limits.h>
@@ -18,6 +19,10 @@
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+#define weldin stdin
+#define weldout stdout
+#define welderr stderr
 
 struct weld_config {
   char **argv;
@@ -68,6 +73,8 @@ struct weld_comm {
 extern struct weld_config weldcfg;
 
 int weld_main(struct weld_config cfg);
+
+int weld_commnext(void);
 
 struct weld_config weld_config_from_env(void);
 

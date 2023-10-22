@@ -92,7 +92,7 @@ void test_wordexp(void) {
 }
 
 int main(int arc, char **argv) {
-  weldcfg.verbose = false;
+  weldcfg.verbose = true;
 
   test_commpath();
   test_commfrom();
