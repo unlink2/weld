@@ -13,6 +13,8 @@
 #define WELD_PATH_MAX 4096
 #endif
 
+#define WELD_BUF_MAX PATH_MAX * 3
+
 #define WELD_COMM_TERM ':'
 #define WELD_COMM_ESCAPE '\\'
 #define WELD_COMM_COMMENT '#'

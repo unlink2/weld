@@ -7,19 +7,53 @@
 #include <wordexp.h>
 
 struct weld_config weldcfg;
-#define weldin stdin
-#define weldout stdout
-#define welderr stderr
 
 int weld_main(struct weld_config cfg) {
   weldcfg = cfg;
+
+  while (weld_commnext() != -1) {
+  }
+
+  return 0;
+}
+
+int weld_commdo(const char *comm) {
+  puts(comm);
   return 0;
 }
 
 int weld_commnext(void) {
   // read a line from in
+  char buf[WELD_BUF_MAX];
+  memset(buf, 0, WELD_BUF_MAX);
 
-  return 0;
+  if (fgets(buf, WELD_BUF_MAX, weldin) == 0) {
+    return -1;
+  }
+
+  buf[strcspn(buf, "\n")] = 0;
+
+  if (weldcfg.expand) {
+    size_t len = 0;
+    char **expanded = weld_wordexp(buf, &len);
+
+    if (expanded == NULL) {
+      return -1;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+      if (weld_commdo(expanded[i]) == -1) {
+        weld_wordexp_free(expanded, len);
+        return -1;
+      }
+    }
+
+    weld_wordexp_free(expanded, len);
+
+    return 0;
+  }
+
+  return weld_commdo(buf);
 }
 
 struct weld_config weld_config_from_env(void) {
