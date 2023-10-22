@@ -75,7 +75,11 @@ struct weld_comm {
 // file stat results
 struct weld_stat {
   int ok;
+  // ptr to path in comm
+  const char *path;
   bool exists;
+  bool access;
+  int mod;
 };
 
 // result of chk
