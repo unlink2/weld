@@ -25,19 +25,19 @@ struct weld_stat weld_fstat(const char *path) {
 
   int fd = open(path, O_RDONLY | O_CLOEXEC);
   if (fd == -1) {
-    goto FAIL;
+    wstat.exists = false;
+  } else {
+
+    struct stat fs;
+
+    if (fstat(fd, &fs) < 0) {
+      goto FAIL;
+    }
+
+    wstat.st_mode = fs.st_mode;
+
+    close(fd);
   }
-
-  struct stat fs;
-
-  if (fstat(fd, &fs) < 0) {
-    goto FAIL;
-  }
-
-  wstat.st_mode = fs.st_mode;
-
-  close(fd);
-
   wstat.ok = 0;
 FAIL:
   fprintf(welderr, "%s: %s\n", path, strerror(errno));

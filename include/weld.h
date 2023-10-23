@@ -100,6 +100,7 @@ struct weld_stat {
   int ok;
   // ptr to path in comm
   const char *path;
+  bool exists;
   weld_st_mode st_mode;
 };
 
