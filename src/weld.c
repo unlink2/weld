@@ -21,6 +21,7 @@ struct weld_commchk weld_commchk(struct weld_comm *comm) {
   struct weld_commchk chk;
   memset(&chk, 0, sizeof(chk));
   chk.ok = -1;
+  chk.comm = comm;
 
   if (comm->ok == -1) {
     goto FAIL;

@@ -86,14 +86,7 @@ struct weld_stat {
 // this determines what running a command will do
 struct weld_commchk {
   int ok;
-  enum weld_comms type;
-  union {
-    // type symlink
-    struct {
-      struct weld_stat src;
-      struct weld_stat dst;
-    };
-  };
+  struct weld_comm *comm;
 };
 
 // global cfg
