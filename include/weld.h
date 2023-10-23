@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 #ifdef __linux__
 #include <linux/limits.h>
@@ -25,6 +26,8 @@
 #define weldin stdin
 #define weldout stdout
 #define welderr stderr
+
+typedef mode_t weld_st_mode;
 
 struct weld_config {
   char **argv;
@@ -77,16 +80,23 @@ struct weld_stat {
   int ok;
   // ptr to path in comm
   const char *path;
-  bool exists;
-  bool access;
-  int mod;
+  weld_st_mode st_mode;
+  int mode;
 };
 
 // result of chk
 // this determines what running a command will do
+// this type is only valid as long as comm is valid
 struct weld_commchk {
   int ok;
   struct weld_comm *comm;
+  union {
+    // type symlink
+    struct {
+      struct weld_stat src_stat;
+      struct weld_stat dst_stat;
+    };
+  };
 };
 
 // global cfg
