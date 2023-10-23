@@ -4,17 +4,38 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <sys/types.h>
 
 #ifdef __linux__
 #include <linux/limits.h>
 #define WELD_PATH_MAX PATH_MAX
 #else
-// TODO: get limits for other systems
 #define WELD_PATH_MAX 4096
 #endif
 
-#define WELD_BUF_MAX PATH_MAX * 3
+// platform specific types and macros
+// try to wrap posix types and calls here
+// to allow the possibility of *maybe* supporting
+// non-posix systems in the future
+#ifdef __unix__
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+typedef mode_t weld_st_mode;
+
+#define WELD_S_ISREG(m) S_ISREG(m)
+#define WELD_S_ISDIR(m) S_ISDIR(m)
+#define WELD_S_ISCHR(m) S_ISCHR(m)
+#define WELD_S_ISBLK(m) S_SIBLK(m)
+#define WELD_S_ISFIFO(m) S_ISFIFO(m)
+#define WELD_IS_ISLIN(M) S_ISLINK(m)
+#define WELD_S_ISSOCK(m) S_ISSOCK(m)
+
+#else
+#error "Platform is not supported"
+#endif
+
+#define WELD_BUF_MAX (WELD_PATH_MAX * 3)
 
 #define WELD_COMM_TERM ':'
 #define WELD_COMM_ESCAPE '\\'
@@ -26,8 +47,6 @@
 #define weldin stdin
 #define weldout stdout
 #define welderr stderr
-
-typedef mode_t weld_st_mode;
 
 struct weld_config {
   char **argv;
