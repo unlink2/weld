@@ -1,6 +1,7 @@
 #include "weld.h"
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,32 @@ int weld_main(struct weld_config cfg) {
   }
 
   return 0;
+}
+
+struct weld_stat weld_fstat(const char *path) {
+  struct weld_stat wstat;
+  memset(&wstat, 0, sizeof(wstat));
+  wstat.ok = -1;
+
+  int fd = open(path, O_RDONLY | O_CLOEXEC);
+  if (fd == -1) {
+    goto FAIL;
+  }
+
+  struct stat fs;
+
+  if (fstat(fd, &fs) < 0) {
+    goto FAIL;
+  }
+
+  wstat.st_mode = fs.st_mode;
+
+  close(fd);
+
+  wstat.ok = 0;
+FAIL:
+  fprintf(welderr, "%s: %s\n", path, strerror(errno));
+  return wstat;
 }
 
 struct weld_commchk weld_commchk(struct weld_comm *comm) {

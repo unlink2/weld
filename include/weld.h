@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 typedef mode_t weld_st_mode;
 
@@ -100,7 +101,6 @@ struct weld_stat {
   // ptr to path in comm
   const char *path;
   weld_st_mode st_mode;
-  int mode;
 };
 
 // result of chk
