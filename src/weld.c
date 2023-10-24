@@ -26,12 +26,12 @@ struct weld_stat weld_stat(const char *path) {
   struct weld_stat wstat;
   memset(&wstat, 0, sizeof(wstat));
   wstat.ok = -1;
+  wstat.path = path;
 
   int fd = open(path, O_RDONLY | O_CLOEXEC);
   if (fd == -1) {
     wstat.exists = false;
   } else {
-
     struct stat fs;
 
     if (fstat(fd, &fs) < 0) {
@@ -43,9 +43,24 @@ struct weld_stat weld_stat(const char *path) {
     close(fd);
   }
   wstat.ok = 0;
+  return wstat;
 FAIL:
   fprintf(welderr, "%s: %s\n", path, strerror(errno));
   return wstat;
+}
+
+size_t weld_fmtstat(FILE *f, struct weld_stat *stat) {
+  size_t written = fprintf(f, "%s (", stat->path);
+
+  if (!stat->exists) {
+    fputs(".", f);
+  } else if (WELD_S_ISDIR(stat->st_mode)) {
+    fputs("d", f);
+  }
+
+  fputs(")", f);
+
+  return written;
 }
 
 struct weld_commchk weld_commchk(struct weld_comm *comm) {
@@ -64,10 +79,20 @@ struct weld_commchk weld_commchk(struct weld_comm *comm) {
 
   switch (comm->type) {
   case WELD_COMM_SYMLINK:
+    chk.src_stat = weld_stat(comm->src);
+    chk.dst_stat = weld_stat(comm->dst);
     if (display) {
-      fprintf(weldout, "symlink ");
+      fprintf(weldout, "[symlink] ");
+      weld_fmtstat(weldout, &chk.src_stat);
+      fputs(" -> ", weldout);
+
+      weld_fmtstat(weldout, &chk.dst_stat);
+      fputs("\n", weldout);
     }
 
+    if (chk.src_stat.ok == -1) {
+      goto FAIL;
+    }
     break;
   case WELD_COMM_NOP:
     break;
@@ -130,6 +155,8 @@ int weld_commnext(void) {
 struct weld_config weld_config_from_env(void) {
   struct weld_config cfg;
   memset(&cfg, 0, sizeof(cfg));
+
+  cfg.color = true;
 
   return cfg;
 }

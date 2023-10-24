@@ -49,6 +49,18 @@ typedef mode_t weld_st_mode;
 #define weldout stdout
 #define welderr stderr
 
+// Config variables
+#define WELD_CFG_FMT_OK "\x1B[32m"
+#define WELD_CFG_FMT_WARN "\x1B[33m"
+#define WELD_CFG_FMT_ERR "\x1B[31m"
+#define WELD_CFG_FMT_RESET "\x1B[0m"
+
+// format macros
+#define WELD_FMT(f, fmt)                                                       \
+  if (isatty(f) && weldcfg.color) {                                            \
+    fprintf((f), "%s", (fmt));                                                 \
+  }
+
 struct weld_config {
   char **argv;
   int argc;
@@ -75,6 +87,8 @@ struct weld_config {
   // this allows the use of shell-variables in the
   // declaration
   bool expand;
+
+  bool color;
 };
 
 enum weld_comms {
