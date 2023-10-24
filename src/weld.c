@@ -39,6 +39,7 @@ struct weld_stat weld_stat(const char *path) {
     }
 
     wstat.st_mode = fs.st_mode;
+    wstat.exists = true;
 
     close(fd);
   }
@@ -55,7 +56,14 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *stat) {
   if (!stat->exists) {
     fputs(".", f);
   } else if (WELD_S_ISDIR(stat->st_mode)) {
+    // dir
     fputs("d", f);
+  } else if (WELD_S_ISREG(stat->st_mode)) {
+    // file
+    fputs("f", f);
+  } else {
+    // other
+    fputs("u", f);
   }
 
   fputs(")", f);
