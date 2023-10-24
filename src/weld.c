@@ -18,7 +18,11 @@ int weld_main(struct weld_config cfg) {
   return 0;
 }
 
-struct weld_stat weld_fstat(const char *path) {
+size_t weld_readlink(const char *path, char *buf, size_t bufsize) {
+  return readlink(path, buf, bufsize);
+}
+
+struct weld_stat weld_stat(const char *path) {
   struct weld_stat wstat;
   memset(&wstat, 0, sizeof(wstat));
   wstat.ok = -1;
@@ -63,6 +67,7 @@ struct weld_commchk weld_commchk(struct weld_comm *comm) {
     if (display) {
       fprintf(weldout, "symlink ");
     }
+
     break;
   case WELD_COMM_NOP:
     break;

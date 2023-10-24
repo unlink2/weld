@@ -127,6 +127,9 @@ int weld_main(struct weld_config cfg);
 int weld_commnext(void);
 
 struct weld_config weld_config_from_env(void);
+struct weld_commchk weld_commchk(struct weld_comm *comm);
+struct weld_stat weld_stat(const char *path);
+size_t weld_readlink(const char *path, char *buf, size_t bufsize);
 
 // calls wordexp(3) on the input line.
 // Returns an array of strings.
