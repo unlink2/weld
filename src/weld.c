@@ -5,21 +5,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <wordexp.h>
+#include <pwd.h>
+#include <grp.h>
 
 struct weld_config weldcfg;
 
 int weld_main(struct weld_config cfg) {
   weldcfg = cfg;
 
-  while (weld_commnext() != -1) {
+  int ec = 0;
+
+  for (size_t i = 0; i < cfg.argc; i++) {
+    if ((weld_commnext(cfg.argv[i], strlen(cfg.argv[i]))) != 0) {
+      return -1;
+    }
   }
 
-  return 0;
-}
+  while ((!isatty(fileno(weldin)) || cfg.argc == 0) &&
+         (ec = weld_fcommnext()) == 0) {
+  }
 
-size_t weld_readlink(const char *path, char *buf, size_t bufsize) {
-  return readlink(path, buf, bufsize);
+  if (ec == 1) {
+    ec = 0;
+  }
+
+  return ec;
 }
 
 struct weld_stat weld_stat(const char *path) {
@@ -38,7 +50,7 @@ struct weld_stat weld_stat(const char *path) {
       goto FAIL;
     }
 
-    wstat.st_mode = fs.st_mode;
+    wstat.st = fs;
     wstat.exists = true;
 
     close(fd);
@@ -51,19 +63,36 @@ FAIL:
 }
 
 size_t weld_fmtstat(FILE *f, struct weld_stat *stat) {
-  size_t written = fprintf(f, "%s (", stat->path);
+  char pbuf[WELD_PATH_MAX];
+  memset(pbuf, 0, WELD_PATH_MAX);
 
+  size_t written = fprintf(f, "%s (", stat->path);
   if (!stat->exists) {
-    fputs(".", f);
-  } else if (WELD_S_ISDIR(stat->st_mode)) {
-    // dir
-    fputs("d", f);
-  } else if (WELD_S_ISREG(stat->st_mode)) {
-    // file
-    fputs("f", f);
-  } else {
-    // other
-    fputs("u", f);
+    WELD_FMT(f, WELD_CFG_FMT_RED);
+    written += fputs("E", f);
+    WELD_FMT(f, WELD_CFG_FMT_RESET);
+    written += fputs(")", f);
+    return written;
+  }
+
+  WELD_FMT(f, WELD_CFG_FMT_YELLOW);
+  fprintf(f, "%o", stat->st.st_mode);
+  WELD_FMT(f, WELD_CFG_FMT_RESET);
+
+  struct passwd *pws = getpwuid(stat->st.st_uid);
+  struct group *grp = getgrgid(stat->st.st_gid);
+
+  WELD_FMT(f, WELD_CFG_FMT_CYAN);
+  fprintf(f, " %s %s", pws->pw_name, grp->gr_name);
+  WELD_FMT(f, WELD_CFG_FMT_RESET);
+
+  if ((stat->st.st_mode & S_IFMT) == S_IFLNK) {
+    size_t len = readlink(stat->path, pbuf, WELD_PATH_MAX);
+    if (len == -1) {
+      WELD_FMT(f, WELD_CFG_FMT_RED);
+      fprintf(f, " -> invalid link");
+      WELD_FMT(f, WELD_CFG_FMT_RESET);
+    }
   }
 
   fputs(")", f);
@@ -90,7 +119,10 @@ struct weld_commchk weld_commchk(struct weld_comm *comm) {
     chk.src_stat = weld_stat(comm->src);
     chk.dst_stat = weld_stat(comm->dst);
     if (display) {
-      fprintf(weldout, "[symlink] ");
+      WELD_FMT(weldout, WELD_CFG_FMT_GREEN);
+      fprintf(weldout, "[create symlink] ");
+      WELD_FMT(weldout, WELD_CFG_FMT_RESET);
+
       weld_fmtstat(weldout, &chk.src_stat);
       fputs(" -> ", weldout);
 
@@ -126,17 +158,21 @@ int weld_commdo(const char *line) {
   return 0;
 }
 
-int weld_commnext(void) {
+// next command from in file
+int weld_fcommnext(void) {
   // read a line from in
   char buf[WELD_BUF_MAX];
   memset(buf, 0, WELD_BUF_MAX);
 
   if (fgets(buf, WELD_BUF_MAX, weldin) == 0) {
-    return -1;
+    return 1;
   }
-
   buf[strcspn(buf, "\n")] = 0;
 
+  return weld_commnext(buf, WELD_BUF_MAX);
+}
+
+int weld_commnext(char *buf, size_t buflen) {
   if (weldcfg.expand) {
     size_t len = 0;
     char **expanded = weld_wordexp(buf, &len);

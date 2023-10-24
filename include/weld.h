@@ -12,29 +12,10 @@
 #define WELD_PATH_MAX 4096
 #endif
 
-// platform specific types and macros
-// try to wrap posix types and calls here
-// to allow the possibility of *maybe* supporting
-// non-posix systems in the future
-#ifdef __unix__
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-
-typedef mode_t weld_st_mode;
-
-#define WELD_S_ISREG(m) S_ISREG(m)
-#define WELD_S_ISDIR(m) S_ISDIR(m)
-#define WELD_S_ISCHR(m) S_ISCHR(m)
-#define WELD_S_ISBLK(m) S_SIBLK(m)
-#define WELD_S_ISFIFO(m) S_ISFIFO(m)
-#define WELD_IS_ISLIN(M) S_ISLINK(m)
-#define WELD_S_ISSOCK(m) S_ISSOCK(m)
-
-#else
-#error "Platform is not supported"
-#endif
 
 #define WELD_BUF_MAX (WELD_PATH_MAX * 3)
 
@@ -50,14 +31,17 @@ typedef mode_t weld_st_mode;
 #define welderr stderr
 
 // Config variables
-#define WELD_CFG_FMT_OK "\x1B[32m"
-#define WELD_CFG_FMT_WARN "\x1B[33m"
-#define WELD_CFG_FMT_ERR "\x1B[31m"
+#define WELD_CFG_FMT_GREEN "\x1B[32m"
+#define WELD_CFG_FMT_YELLOW "\x1B[33m"
+#define WELD_CFG_FMT_RED "\x1B[31m"
+#define WELD_CFG_FMT_MAGENTA "\x1B[35m"
+#define WELD_CFG_FMT_CYAN "\x1B[36m"
+#define WELD_CFG_FMT_BLUE "\x1B[34m"
 #define WELD_CFG_FMT_RESET "\x1B[0m"
 
 // format macros
 #define WELD_FMT(f, fmt)                                                       \
-  if (isatty(f) && weldcfg.color) {                                            \
+  if (isatty(fileno(f)) && weldcfg.color) {                                    \
     fprintf((f), "%s", (fmt));                                                 \
   }
 
@@ -115,7 +99,8 @@ struct weld_stat {
   // ptr to path in comm
   const char *path;
   bool exists;
-  weld_st_mode st_mode;
+  // stat will only be set if exists is true and ok is 0
+  struct stat st;
 };
 
 // result of chk
@@ -138,12 +123,18 @@ extern struct weld_config weldcfg;
 
 int weld_main(struct weld_config cfg);
 
-int weld_commnext(void);
+// reads next command from stdin file 
+// returns 0 on success, -1 on failure, and 1 if successful 
+// but no more input is present
+int weld_fcommnext(void);
+
+// executes a command
+// returns 0 on success and -1 on failure 
+int weld_commnext(char *buf, size_t buflen);
 
 struct weld_config weld_config_from_env(void);
 struct weld_commchk weld_commchk(struct weld_comm *comm);
 struct weld_stat weld_stat(const char *path);
-size_t weld_readlink(const char *path, char *buf, size_t bufsize);
 
 // calls wordexp(3) on the input line.
 // Returns an array of strings.
