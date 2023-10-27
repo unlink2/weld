@@ -117,6 +117,9 @@ void weld_test_init(void) {
 
   assert(path);
   assert(chdir(path) == 0);
+
+  // set up files that tests expect to exist here
+
   printf("[tests '%s']\n", path);
 }
 
