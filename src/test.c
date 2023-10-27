@@ -110,14 +110,10 @@ void test_wordexp(void) {
  * or /tmp
  */
 void weld_test_init(void) {
-  char *tmp = getenv(WELD_TMPDIR);
-  if (!tmp) {
-    tmp = "/tmp";
+  char *path = getenv(WELD_TMPDIR);
+  if (!path) {
+    path = "./tmp";
   }
-  char dir[WELD_PATH_MAX];
-  sprintf(dir, "%s/%s", tmp, WELD_TMPD_TEMPLATE);
-
-  char *path = mkdtemp(dir);
 
   assert(path);
   assert(chdir(path) == 0);
