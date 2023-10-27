@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define WELD_TMPD_TEMPLATE "weld-test-XXXXXX"
+
 #define assert_commpath(expect_str, expect_read, src, buf, len)                \
   memset(buf, 0, len);                                                         \
   assert(weld_commtok((buf), (src), (len)) == (expect_read));                  \
@@ -99,9 +101,33 @@ void test_wordexp(void) {
   puts("[wordexp ok]");
 }
 
+/**
+ * This function sets up a directory that is to be used by the tests
+ * the directory shall contain some dummy files that the tests can operate on
+ * the tests will chdir into the respective test directoy
+ * This test will place the directory in the directory specified in TMPDIR 
+ * or /tmp
+ */
+void weld_test_init(void) {
+  char *tmp = getenv("TMPDIR");
+  if (!tmp) {
+    tmp = "/tmp";
+  }
+  char dir[WELD_PATH_MAX];
+  sprintf(dir, "%s/%s", tmp, WELD_TMPD_TEMPLATE);
+
+  char *path = mkdtemp(dir);
+
+  assert(path);
+  assert(chdir(path) == 0);
+  printf("[tests '%s']\n", path);
+}
+
 int main(int arc, char **argv) {
   weld_init(weld_config_from_env());
   weldcfg.verbose = false;
+
+  weld_test_init();
 
   puts("[tests]");
 
