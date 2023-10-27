@@ -10,10 +10,27 @@
 #include <pwd.h>
 #include <grp.h>
 
+FILE *weldin = NULL;
+FILE *weldout = NULL;
+FILE *welderr = NULL;
+
 struct weld_config weldcfg;
 
-int weld_main(struct weld_config cfg) {
+void weld_init(struct weld_config cfg) {
+  if (weldin == NULL) {
+    weldin = stdin;
+  }
+  if (weldout == NULL) {
+    weldout = stdout;
+  }
+  if (welderr == NULL) {
+    welderr = stderr;
+  }
   weldcfg = cfg;
+}
+
+int weld_main(struct weld_config cfg) {
+  weld_init(cfg);
 
   int ec = 0;
 

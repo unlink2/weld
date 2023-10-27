@@ -74,6 +74,12 @@ void test_commfrom(void) {
   puts("[commfrom ok]");
 }
 
+// test the output of a dry run here
+// including reading fake data
+// from a directory specifically made to
+// test the program
+void test_dry(void) {}
+
 #define assert_wordexp(expectv0, expect_len, line)                             \
   {                                                                            \
     size_t len = 0;                                                            \
@@ -94,6 +100,7 @@ void test_wordexp(void) {
 }
 
 int main(int arc, char **argv) {
+  weld_init(weld_config_from_env());
   weldcfg.verbose = false;
 
   puts("[tests]");

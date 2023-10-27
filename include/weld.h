@@ -26,9 +26,15 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-#define weldin stdin
-#define weldout stdout
-#define welderr stderr
+/**
+ * these files are initied to NULL
+ * if they are not mapped to anything else they will
+ * be mapped to stdin, stdout and stderr respectively
+ * upon calling weld_main or weld_init
+ */
+extern FILE *weldin;
+extern FILE *weldout;
+extern FILE *welderr;
 
 // Config variables
 #define WELD_CFG_FMT_GREEN "\x1B[32m"
@@ -121,15 +127,16 @@ struct weld_commchk {
 // global cfg
 extern struct weld_config weldcfg;
 
+void weld_init(struct weld_config cfg);
 int weld_main(struct weld_config cfg);
 
-// reads next command from stdin file 
-// returns 0 on success, -1 on failure, and 1 if successful 
+// reads next command from stdin file
+// returns 0 on success, -1 on failure, and 1 if successful
 // but no more input is present
 int weld_fcommnext(void);
 
 // executes a command
-// returns 0 on success and -1 on failure 
+// returns 0 on success and -1 on failure
 int weld_commnext(char *buf, size_t buflen);
 
 struct weld_config weld_config_from_env(void);
