@@ -103,6 +103,7 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *stat) {
   fprintf(f, " %s %s", pws->pw_name, grp->gr_name);
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
+  // TODO: also check access() here
   if ((stat->st.st_mode & S_IFMT) == S_IFLNK) {
     size_t len = readlink(stat->path, pbuf, WELD_PATH_MAX);
     if (len == -1) {
