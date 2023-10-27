@@ -1,4 +1,6 @@
 #!/bin/bash
 
-make && ./bin/testweld
+mkdir -p "./tmp"
+
+make && WELD_TMPDIR="./tmp" ./bin/testweld
 
