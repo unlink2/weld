@@ -104,10 +104,11 @@ void test_dry(void) {
   weldcfg.dry = true;
 
   weldcfg.argv =
-      (char *[]){"s:./f0.weld:./f0-link.wedl", "s:./f.weld:./f-link.weld",
-                 "s:./f2.weld:./f2-link.weld",
-                 "s:./f3.weld:./f3-link.weld"};
-  weldcfg.argc = 4;
+      (char *[]){"s:./f.weld:./f-link.weld",
+                 "s:./f0.weld:./f0-link.wedl",
+                 "s:./f2.weld:./f2-link.weld", "s:./f3.weld:./f3-link.weld",
+                 "s:./f4.weld:./f4-link.weld"};
+  weldcfg.argc = 5;
 
   puts("[dry test]");
 
