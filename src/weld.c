@@ -172,7 +172,9 @@ int weld_commchk(struct weld_comm *comm) {
 
     // dst must not exist if -f is not set
     if (!weldcfg.force && dst_exists != -1) {
-      fprintf(welderr, "'%s' exists\n", comm->dst);
+      WELD_FMT(welderr, WELD_CFG_FMT_RED);
+      fprintf(welderr, "Error: '%s' exists\n", comm->dst);
+      WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
     break;
