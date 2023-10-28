@@ -126,23 +126,24 @@ void test_dry(void) {
 
   puts("[dry test]");
 
-  assert_dry("\"[create symlink] ./f.weld (E) -> ./f-link.weld (E)\n\"",
+  assert_dry("\"[create symlink] ./f.weld (e---------) -> ./f-link.weld "
+             "(e---------)\n\"",
              "s:./f.weld:./f-link.weld");
 
-  assert_dry("\"[create symlink] ./f0.weld (100444 $USER $USER) -> "
-             "./f0-link.wedl (E)\n\"",
+  assert_dry("\"[create symlink] ./f0.weld (-r--r--r-- $USER $USER) -> "
+             "./f0-link.wedl (e---------)\n\"",
              "s:./f0.weld:./f0-link.wedl");
 
-  assert_dry("\"[create symlink] ./f2.weld (100444 $USER $USER) -> "
-             "./f2-link.weld (120777 $USER $USER -> f.weld)\n\"",
+  assert_dry("\"[create symlink] ./f2.weld (-r--r--r-- $USER $USER) -> "
+             "./f2-link.weld (lrwxrwxrwx $USER $USER -> f.weld)\n\"",
              "s:./f2.weld:./f2-link.weld");
 
-  assert_dry("\"[create symlink] ./f3.weld (100444 $USER $USER) -> "
-             "./f3-link.weld (120777 $USER $USER -> f3.weld)\n\"",
+  assert_dry("\"[create symlink] ./f3.weld (-r--r--r-- $USER $USER) -> "
+             "./f3-link.weld (lrwxrwxrwx $USER $USER -> f3.weld)\n\"",
              "s:./f3.weld:./f3-link.weld");
 
-  assert_dry("\"[create symlink] ./f4.weld (100444 $USER $USER) -> "
-             "./f4-link.weld (100444 $USER $USER)\n\"",
+  assert_dry("\"[create symlink] ./f4.weld (-r--r--r-- $USER $USER) -> "
+             "./f4-link.weld (-r--r--r-- $USER $USER)\n\"",
              "s:./f4.weld:./f4-link.weld");
 
   puts("[dry ok]");

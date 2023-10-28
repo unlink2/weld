@@ -82,28 +82,50 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
   size_t written = fprintf(f, "%s (", wstat->path);
   if (!wstat->exists) {
     WELD_FMT(f, WELD_CFG_FMT_RED);
-    written += fputs("E", f);
+    written += fputs("e---------", f);
     WELD_FMT(f, WELD_CFG_FMT_RESET);
     written += fputs(")", f);
     return written;
   }
 
+  char type = '-';
+
+  switch (wstat->st.st_mode & S_IFMT) {
+  case S_IFDIR:
+    type = 'd';
+    break;
+  case S_IFLNK:
+    type = 'l';
+    break;
+  default:
+    type = '-';
+    break;
+  }
+
+  unsigned int st_mode = wstat->st.st_mode;
+
   WELD_FMT(f, WELD_CFG_FMT_YELLOW);
-  fprintf(f, "%o", wstat->st.st_mode);
+  fprintf(f, "%c%c%c%c%c%c%c%c%c%c", type, (st_mode & S_IRUSR) ? 'r' : '-',
+          (st_mode & S_IWUSR) ? 'w' : '-', (st_mode & S_IXUSR) ? 'x' : '-',
+          (st_mode & S_IRGRP) ? 'r' : '-', (st_mode & S_IWGRP) ? 'w' : '-',
+          (st_mode & S_IXGRP) ? 'x' : '-', (st_mode & S_IROTH) ? 'r' : '-',
+          (st_mode & S_IWOTH) ? 'w' : '-', (st_mode & S_IXOTH) ? 'x' : '-');
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
   struct passwd *pws = getpwuid(wstat->st.st_uid);
   struct group *grp = getgrgid(wstat->st.st_gid);
 
+  // user and group
   WELD_FMT(f, WELD_CFG_FMT_CYAN);
   fprintf(f, " %s %s", pws->pw_name, grp->gr_name);
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
+  // output link target
   if ((wstat->st.st_mode & S_IFMT) == S_IFLNK) {
     size_t len = readlink(wstat->path, pbuf, WELD_PATH_MAX);
     if (len == -1) {
       WELD_FMT(f, WELD_CFG_FMT_RED);
-      written += fputs("-> E", f);
+      written += fputs("-> ", f);
       WELD_FMT(f, WELD_CFG_FMT_RESET);
     } else {
       if (access(wstat->path, F_OK) == 0) {
