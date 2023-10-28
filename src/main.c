@@ -6,7 +6,7 @@
 
 #define WELD_NAME "weld"
 #define WELD_VER "0.0.1"
-#define WELD_OPTS "hvVpdcfe"
+#define WELD_OPTS "hvVpdcfes"
 
 void weld_help(void) {
   printf("%s\n", WELD_NAME);
