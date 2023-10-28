@@ -19,6 +19,7 @@ void weld_help(void) {
   printf("\t-c\tconfirm before each action is taken\n");
   printf("\t-f\tforce creation even if the destination path already exists\n");
   printf("\t-e\tperform shell word expansion on input strings\n");
+  printf("\t-s\tskip errors and process next command\n");
 }
 
 void weld_version(void) { printf("%s version %s\n", WELD_NAME, WELD_VER); }
@@ -52,6 +53,9 @@ void weld_getopt(int argc, char **argv, struct weld_config *cfg) {
       break;
     case 'e':
       cfg->expand = true;
+      break;
+    case 's':
+      cfg->skip_errors = true;
       break;
     default:
       printf("%s: invalid option '%c'\nTry '%s -h' for more information.\n",

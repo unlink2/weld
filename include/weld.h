@@ -73,6 +73,10 @@ struct weld_config {
   // replace exiting links or files
   bool force;
 
+  // skip errors 
+  // and continue to next command anyway
+  bool skip_errors;
+
   // calls wordexp(3) on each line read by the input
   // this allows the use of shell-variables in the
   // declaration
