@@ -99,30 +99,6 @@ struct weld_comm {
   };
 };
 
-// file stat results
-struct weld_stat {
-  int ok;
-  // ptr to path in comm
-  const char *path;
-  bool exists;
-  // stat will only be set if exists is true and ok is 0
-  struct stat st;
-};
-
-// result of chk
-// this determines what running a command will do
-// this type is only valid as long as comm is valid
-struct weld_commchk {
-  int ok;
-  struct weld_comm *comm;
-  union {
-    // type symlink
-    struct {
-      struct weld_stat src_stat;
-      struct weld_stat dst_stat;
-    };
-  };
-};
 
 // global cfg
 extern struct weld_config weldcfg;
@@ -140,8 +116,7 @@ int weld_fcommnext(void);
 int weld_commnext(char *buf, size_t buflen);
 
 struct weld_config weld_config_from_env(void);
-struct weld_commchk weld_commchk(struct weld_comm *comm);
-struct weld_stat weld_stat(const char *path);
+int weld_commchk(struct weld_comm *comm);
 bool weld_is_same_file(const char *p1, const char *p2);
 
 // calls wordexp(3) on the input line.

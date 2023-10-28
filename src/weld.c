@@ -66,36 +66,17 @@ bool weld_is_same_file(const char *p1, const char *p2) {
   return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
 }
 
-struct weld_stat weld_stat(const char *path) {
-  struct weld_stat wstat;
-  memset(&wstat, 0, sizeof(wstat));
-  wstat.ok = 0;
-  wstat.exists = true;
-  wstat.path = path;
-  struct stat fs;
-
-  if (lstat(path, &fs) < 0) {
-    goto FAIL;
-  }
-
-  wstat.st = fs;
-  return wstat;
-FAIL:
-  // fprintf(welderr, "%s: %s\n", path, strerror(errno));
-  wstat.exists = false;
-  return wstat;
-}
-
-size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
-  if (wstat->ok == -1) {
-    return 0;
-  }
-
+int weld_fmtstat(FILE *f, const char *path) {
   char pbuf[WELD_PATH_MAX];
   memset(pbuf, 0, WELD_PATH_MAX);
 
-  size_t written = fprintf(f, "%s (", wstat->path);
-  if (!wstat->exists) {
+  int written = fprintf(f, "%s (", path);
+  struct stat st;
+  int st_ok = lstat(path, &st);
+
+  // check access if it is not a link
+  if ((st_ok == -1 || (st.st_mode & S_IFMT) != S_IFLNK) &&
+      access(path, F_OK) == -1) {
     WELD_FMT(f, WELD_CFG_FMT_RED);
     written += fputs("e---------", f);
     WELD_FMT(f, WELD_CFG_FMT_RESET);
@@ -105,7 +86,7 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
 
   char type = '-';
 
-  switch (wstat->st.st_mode & S_IFMT) {
+  switch (st.st_mode & S_IFMT) {
   case S_IFDIR:
     type = 'd';
     break;
@@ -117,7 +98,7 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
     break;
   }
 
-  unsigned int st_mode = wstat->st.st_mode;
+  unsigned int st_mode = st.st_mode;
 
   WELD_FMT(f, WELD_CFG_FMT_YELLOW);
   fprintf(f, "%c%c%c%c%c%c%c%c%c%c", type, (st_mode & S_IRUSR) ? 'r' : '-',
@@ -127,8 +108,8 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
           (st_mode & S_IWOTH) ? 'w' : '-', (st_mode & S_IXOTH) ? 'x' : '-');
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
-  struct passwd *pws = getpwuid(wstat->st.st_uid);
-  struct group *grp = getgrgid(wstat->st.st_gid);
+  struct passwd *pws = getpwuid(st.st_uid);
+  struct group *grp = getgrgid(st.st_gid);
 
   // user and group
   WELD_FMT(f, WELD_CFG_FMT_CYAN);
@@ -136,14 +117,14 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
   // output link target
-  if ((wstat->st.st_mode & S_IFMT) == S_IFLNK) {
-    size_t len = readlink(wstat->path, pbuf, WELD_PATH_MAX);
+  if ((st.st_mode & S_IFMT) == S_IFLNK) {
+    size_t len = readlink(path, pbuf, WELD_PATH_MAX);
     if (len == -1) {
       WELD_FMT(f, WELD_CFG_FMT_RED);
       written += fputs("-> ", f);
       WELD_FMT(f, WELD_CFG_FMT_RESET);
     } else {
-      if (access(wstat->path, F_OK) == 0) {
+      if (access(path, F_OK) == 0) {
         WELD_FMT(f, WELD_CFG_FMT_GREEN);
       } else {
         WELD_FMT(f, WELD_CFG_FMT_RED);
@@ -158,12 +139,7 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
   return written;
 }
 
-struct weld_commchk weld_commchk(struct weld_comm *comm) {
-  struct weld_commchk chk;
-  memset(&chk, 0, sizeof(chk));
-  chk.ok = -1;
-  chk.comm = comm;
-
+int weld_commchk(struct weld_comm *comm) {
   if (comm->ok == -1) {
     goto FAIL;
   }
@@ -173,38 +149,38 @@ struct weld_commchk weld_commchk(struct weld_comm *comm) {
   bool display = weldcfg.dry || weldcfg.verbose;
 
   switch (comm->type) {
-  case WELD_COMM_SYMLINK:
-    chk.src_stat = weld_stat(comm->src);
-    chk.dst_stat = weld_stat(comm->dst);
+  case WELD_COMM_SYMLINK: {
+    int src_ok = access(comm->src, F_OK);
     if (display) {
       WELD_FMT(weldout, WELD_CFG_FMT_GREEN);
       fprintf(weldout, "[create symlink] ");
       WELD_FMT(weldout, WELD_CFG_FMT_RESET);
 
-      weld_fmtstat(weldout, &chk.src_stat);
+      weld_fmtstat(weldout, comm->src);
       fputs(" -> ", weldout);
 
-      weld_fmtstat(weldout, &chk.dst_stat);
+      weld_fmtstat(weldout, comm->dst);
       fputs("\n", weldout);
     }
 
-    if (chk.src_stat.ok == -1) {
+    if (src_ok == -1) {
       goto FAIL;
     }
     break;
+  }
   case WELD_COMM_NOP:
     break;
   }
 
-  chk.ok = 0;
+  return 0;
 FAIL:
-  return chk;
+  return -1;
 }
 
 int weld_commdo(const char *line) {
   struct weld_comm c = weld_commfrom(line);
-  struct weld_commchk chk = weld_commchk(&c);
-  if (chk.ok == -1) {
+  int ok = weld_commchk(&c);
+  if (ok == -1) {
     return -1;
   }
 
