@@ -102,6 +102,13 @@ void test_wordexp(void) {
   puts("[wordexp ok]");
 }
 
+// simplt creates a new file 
+int weld_touch(const char *path) {
+  int fd =  open(path, O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IRGRP | S_IROTH);
+  assert(fd != -1);
+  return fd;
+}
+
 /**
  * This function sets up a directory that is to be used by the tests
  * the directory shall contain some dummy files that the tests can operate on
@@ -122,6 +129,10 @@ void weld_test_init(void) {
   assert(chdir(path) == 0);
 
   // set up files that tests expect to exist here
+  weld_touch("f0.weld");
+  weld_touch("f1.weld");
+  weld_touch("f2.weld");
+  weld_touch("f3.weld");
 
   printf("[tests '%s']\n", path);
 }
