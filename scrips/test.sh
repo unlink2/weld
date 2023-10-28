@@ -1,8 +1,6 @@
 #!/bin/bash
 
-DIR="./tmp"
-
-mkdir -p "$DIR"
-
+set -e
+DIR=$(mktemp -d -t "weld-XXXXXX")
 make && WELD_TMPDIR="$DIR" ./bin/testweld
 

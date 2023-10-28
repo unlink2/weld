@@ -108,6 +108,9 @@ void test_wordexp(void) {
  * the tests will chdir into the respective test directoy
  * This test will place the directory in the directory specified in WELD_TMPDIR
  * or /tmp
+ * All files that are used by the tests end in .weld.
+ * This is simply to ensure we do not accidentally modify or delete files in the
+ * tmp directory that might have been useful.
  */
 void weld_test_init(void) {
   char *path = getenv(WELD_TMPDIR);
