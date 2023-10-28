@@ -149,6 +149,16 @@ void test_dry(void) {
   puts("[dry ok]");
 }
 
+void test_is_same_file(void) {
+  puts("[same file test]");
+
+  assert(weld_is_same_file("./f3.weld", "./f3-link.weld"));
+  assert(!weld_is_same_file("./f4.weld", "./f4-link.weld"));
+  assert(!weld_is_same_file("./f2.weld", "./f2-link.weld"));
+
+  puts("[same file ok]");
+}
+
 // simplt creates a new file
 int weld_touch(const char *path) {
   int fd =
@@ -207,6 +217,7 @@ int main(int arc, char **argv) {
   test_commfrom();
   test_wordexp();
   test_dry();
+  test_is_same_file();
 
   puts("[tests ok]");
   return 0;

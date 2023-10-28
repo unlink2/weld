@@ -51,6 +51,21 @@ int weld_main(struct weld_config cfg) {
   return ec;
 }
 
+bool weld_is_same_file(const char *p1, const char *p2) {
+  struct stat s1;
+  struct stat s2;
+  if (stat(p1, &s1) == -1) {
+    fprintf(welderr, "%s: %s\n", p1, strerror(errno));
+    return false;
+  }
+  if (stat(p2, &s2) == -1) {
+    fprintf(welderr, "%s: %s\n", p2, strerror(errno));
+    return false;
+  }
+
+  return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+}
+
 struct weld_stat weld_stat(const char *path) {
   struct weld_stat wstat;
   memset(&wstat, 0, sizeof(wstat));
