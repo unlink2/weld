@@ -111,7 +111,7 @@ void test_wordexp(void) {
     char **expanded = weld_wordexp(expect, &len);                              \
     assert(expanded);                                                          \
     assert(len > 0);                                                           \
-    printf("%s == %s", buf, expanded[0]);                                      \
+    printf("%s", buf);                                      \
     assert(strcmp(expanded[0], buf) == 0);                                     \
     weldout = stdout;                                                          \
     weld_wordexp_free(expanded, len);                                          \
