@@ -99,7 +99,6 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
   fprintf(f, " %s %s", pws->pw_name, grp->gr_name);
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
-  // TODO: also check access() here
   if ((wstat->st.st_mode & S_IFMT) == S_IFLNK) {
     size_t len = readlink(wstat->path, pbuf, WELD_PATH_MAX);
     if (len == -1) {
@@ -227,12 +226,32 @@ struct weld_config weld_config_from_env(void) {
   return cfg;
 }
 
+const char *wled_worderr(int worderr) {
+  switch (worderr) {
+  case WRDE_BADCHAR:
+    return "Unquoted character";
+  case WRDE_BADVAL:
+    return "Undefined shell variable was referenced";
+  case WRDE_CMDSUB:
+    return "Command substitution used when WRDE_NOCMD was set";
+  case WRDE_NOSPACE:
+    return "Malloc failed";
+  case WRDE_SYNTAX:
+    return "Syntax error";
+  default:
+    return "Unkonw error";
+  }
+
+  return "";
+}
+
 char **weld_wordexp(const char *line, size_t *len) {
   wordexp_t p;
   char **w = NULL;
 
-  if (wordexp(line, &p, WRDE_NOCMD) != 0) {
-    fprintf(welderr, "wprdexp failed\n");
+  int worderr = wordexp(line, &p, WRDE_NOCMD);
+  if (worderr != 0) {
+    fprintf(welderr, "wordexp failed: %s\n", wled_worderr(worderr));
     goto FAIL;
   }
 

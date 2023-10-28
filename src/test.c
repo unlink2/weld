@@ -92,9 +92,30 @@ void test_wordexp(void) {
   setenv("WELD_TEST", "123", 0);
   assert_wordexp("s:/path/123:/path2/123", 1,
                  "s:/path/$WELD_TEST:/path2/$WELD_TEST");
+  assert_wordexp("s:/path/123:/path2/123", 1, "s:/path/123:/path2/123");
 
   puts("[wordexp ok]");
 }
+
+#define assert_dry(expect, input)                                              \
+  {                                                                            \
+    weldcfg.argv = (char *[]){(input)};                                        \
+    weldcfg.argc = 1;                                                          \
+    char buf[4096];                                                            \
+    memset(buf, 0, 4096);                                                      \
+    FILE *f = fmemopen(buf, 4096, "w");                                        \
+    weldout = f;                                                               \
+    weld_main(weldcfg);                                                        \
+    fclose(f);                                                                 \
+    printf("%s", buf);                                                         \
+    size_t len = 0;                                                            \
+    char **expanded = weld_wordexp(expect, &len);                              \
+    assert(expanded);                                                          \
+    assert(len > 0);                                                           \
+    assert(strcmp(expanded[0], buf) == 0);                                     \
+    weldout = stdout;                                                          \
+    weld_wordexp_free(expanded, len);                                          \
+  }
 
 // test the output of a dry run here
 // including reading fake data
@@ -103,16 +124,26 @@ void test_wordexp(void) {
 void test_dry(void) {
   weldcfg.dry = true;
 
-  weldcfg.argv =
-      (char *[]){"s:./f.weld:./f-link.weld",
-                 "s:./f0.weld:./f0-link.wedl",
-                 "s:./f2.weld:./f2-link.weld", "s:./f3.weld:./f3-link.weld",
-                 "s:./f4.weld:./f4-link.weld"};
-  weldcfg.argc = 5;
-
   puts("[dry test]");
 
-  weld_main(weldcfg);
+  assert_dry("\"[create symlink] ./f.weld (E) -> ./f-link.weld (E)\n\"",
+             "s:./f.weld:./f-link.weld");
+
+  assert_dry("\"[create symlink] ./f0.weld (100444 $USER $USER) -> "
+             "./f0-link.wedl (E)\n\"",
+             "s:./f0.weld:./f0-link.wedl");
+
+  assert_dry("\"[create symlink] ./f2.weld (100444 $USER $USER) -> "
+             "./f2-link.weld (120777 $USER $USER -> f.weld)\n\"",
+             "s:./f2.weld:./f2-link.weld");
+
+  assert_dry("\"[create symlink] ./f3.weld (100444 $USER $USER) -> "
+             "./f3-link.weld (120777 $USER $USER -> f3.weld)\n\"",
+             "s:./f3.weld:./f3-link.weld");
+
+  assert_dry("\"[create symlink] ./f4.weld (100444 $USER $USER) -> "
+             "./f4-link.weld (100444 $USER $USER)\n\"",
+             "s:./f4.weld:./f4-link.weld");
 
   puts("[dry ok]");
 }
