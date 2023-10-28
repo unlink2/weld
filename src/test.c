@@ -140,8 +140,9 @@ void test_dry(void) {
 
   assert_dry("\"[create symlink] ./f3.weld (-r--r--r-- $USER $USER) -> "
              "./f3-link.weld (lrwxrwxrwx $USER $USER -> f3.weld)\n\"",
-             0, "s:./f3.weld:./f3-link.weld");
+             -1, "s:./f3.weld:./f3-link.weld");
 
+  weldcfg.force = true;
   assert_dry("\"[create symlink] ./f4.weld (-r--r--r-- $USER $USER) -> "
              "./f4-link.weld (-r--r--r-- $USER $USER)\n\"",
              0, "s:./f4.weld:./f4-link.weld");

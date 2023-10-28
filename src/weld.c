@@ -141,7 +141,7 @@ int weld_fmtstat(FILE *f, const char *path) {
 
 int weld_commchk(struct weld_comm *comm) {
   if (comm->ok == -1) {
-    goto FAIL;
+    return -1;
   }
 
   //  check will only print detailed non-error information
@@ -150,7 +150,7 @@ int weld_commchk(struct weld_comm *comm) {
 
   switch (comm->type) {
   case WELD_COMM_SYMLINK: {
-    int src_ok = access(comm->src, F_OK);
+
     if (display) {
       WELD_FMT(weldout, WELD_CFG_FMT_GREEN);
       fprintf(weldout, "[create symlink] ");
@@ -162,9 +162,18 @@ int weld_commchk(struct weld_comm *comm) {
       weld_fmtstat(weldout, comm->dst);
       fputs("\n", weldout);
     }
-
+    int src_ok = access(comm->src, F_OK);
+    int dst_exists = access(comm->dst, F_OK);
+    // src always has to exists
     if (src_ok == -1) {
-      goto FAIL;
+      fprintf(welderr, "%s\n", strerror(errno));
+      return -1;
+    }
+
+    // dst must not exist if -f is not set
+    if (!weldcfg.force && dst_exists != -1) {
+      fprintf(welderr, "'%s' exists\n", comm->dst);
+      return -1;
     }
     break;
   }
@@ -173,8 +182,6 @@ int weld_commchk(struct weld_comm *comm) {
   }
 
   return 0;
-FAIL:
-  return -1;
 }
 
 int weld_commdo(const char *line) {
