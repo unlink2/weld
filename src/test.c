@@ -111,7 +111,7 @@ void test_wordexp(void) {
     char **expanded = weld_wordexp(expect, &len);                              \
     assert(expanded);                                                          \
     assert(len > 0);                                                           \
-    printf("%s", buf);                                      \
+    printf("%s", buf);                                                         \
     assert(strcmp(expanded[0], buf) == 0);                                     \
     weldout = stdout;                                                          \
     weld_wordexp_free(expanded, len);                                          \
@@ -140,12 +140,17 @@ void test_dry(void) {
 
   assert_dry("\"[create symlink] ./f3.weld (-r--r--r-- $USER $USER) -> "
              "./f3-link.weld (lrwxrwxrwx $USER $USER -> f3.weld)\n\"",
-             -1, "s:./f3.weld:./f3-link.weld");
+             0, "s:./f3.weld:./f3-link.weld");
+
+  assert_dry("\"[create symlink] ./f4.weld (-r--r--r-- $USER $USER) -> "
+             "./f4-link.weld (-r--r--r-- $USER $USER)\n\"",
+             -1, "s:./f4.weld:./f4-link.weld");
 
   weldcfg.force = true;
   assert_dry("\"[create symlink] ./f4.weld (-r--r--r-- $USER $USER) -> "
              "./f4-link.weld (-r--r--r-- $USER $USER)\n\"",
              0, "s:./f4.weld:./f4-link.weld");
+  weldcfg.force = false;
 
   puts("[dry ok]");
 }

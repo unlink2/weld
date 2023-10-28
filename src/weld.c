@@ -171,7 +171,9 @@ int weld_commchk(struct weld_comm *comm) {
     }
 
     // dst must not exist if -f is not set
-    if (!weldcfg.force && dst_exists != -1) {
+    // but do not error if src and dst are the smae inode
+    if (!weldcfg.force && dst_exists != -1 &&
+        !weld_is_same_file(comm->src, comm->dst)) {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
       fprintf(welderr, "Error: '%s' exists\n", comm->dst);
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
