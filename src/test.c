@@ -77,12 +77,6 @@ void test_commfrom(void) {
   puts("[commfrom ok]");
 }
 
-// test the output of a dry run here
-// including reading fake data
-// from a directory specifically made to
-// test the program
-void test_dry(void) {}
-
 #define assert_wordexp(expectv0, expect_len, line)                             \
   {                                                                            \
     size_t len = 0;                                                            \
@@ -102,9 +96,30 @@ void test_wordexp(void) {
   puts("[wordexp ok]");
 }
 
-// simplt creates a new file 
+// test the output of a dry run here
+// including reading fake data
+// from a directory specifically made to
+// test the program
+void test_dry(void) {
+  weldcfg.dry = true;
+
+  weldcfg.argv =
+      (char *[]){"s:./f0.weld:./f0-link.wedl", "s:./f.weld:./f-link.weld",
+                 "s:./f2.weld:./f2-link.weld",
+                 "s:./f3.weld:./f3-link.weld"};
+  weldcfg.argc = 4;
+
+  puts("[dry test]");
+
+  weld_main(weldcfg);
+
+  puts("[dry ok]");
+}
+
+// simplt creates a new file
 int weld_touch(const char *path) {
-  int fd =  open(path, O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IRGRP | S_IROTH);
+  int fd =
+      open(path, O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IRGRP | S_IROTH);
   assert(fd != -1);
   return fd;
 }
@@ -133,8 +148,18 @@ void weld_test_init(void) {
   weld_touch("f1.weld");
   weld_touch("f2.weld");
   weld_touch("f3.weld");
+  weld_touch("f4.weld");
 
-  printf("[tests '%s']\n", path);
+  // file instead of link
+  weld_touch("f4-link.weld");
+
+  // valid link
+  assert(symlink("f3.weld", "f3-link.weld") != -1);
+
+  // link that points nowhere
+  assert(symlink("f.weld", "f2-link.weld") != -1);
+
+  printf("[test location '%s']\n", path);
 }
 
 int main(int arc, char **argv) {
@@ -148,6 +173,7 @@ int main(int arc, char **argv) {
   test_commpath();
   test_commfrom();
   test_wordexp();
+  test_dry();
 
   puts("[tests ok]");
   return 0;

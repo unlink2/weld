@@ -54,37 +54,33 @@ int weld_main(struct weld_config cfg) {
 struct weld_stat weld_stat(const char *path) {
   struct weld_stat wstat;
   memset(&wstat, 0, sizeof(wstat));
-  wstat.ok = -1;
-  wstat.path = path;
-
-  int fd = open(path, O_RDONLY | O_CLOEXEC);
-  if (fd == -1) {
-    wstat.exists = false;
-  } else {
-    struct stat fs;
-
-    if (fstat(fd, &fs) < 0) {
-      goto FAIL;
-    }
-
-    wstat.st = fs;
-    wstat.exists = true;
-
-    close(fd);
-  }
   wstat.ok = 0;
+  wstat.exists = true;
+  wstat.path = path;
+  struct stat fs;
+
+  if (lstat(path, &fs) < 0) {
+    goto FAIL;
+  }
+
+  wstat.st = fs;
   return wstat;
 FAIL:
-  fprintf(welderr, "%s: %s\n", path, strerror(errno));
+  // fprintf(welderr, "%s: %s\n", path, strerror(errno));
+  wstat.exists = false;
   return wstat;
 }
 
-size_t weld_fmtstat(FILE *f, struct weld_stat *stat) {
+size_t weld_fmtstat(FILE *f, struct weld_stat *wstat) {
+  if (wstat->ok == -1) {
+    return 0;
+  }
+
   char pbuf[WELD_PATH_MAX];
   memset(pbuf, 0, WELD_PATH_MAX);
 
-  size_t written = fprintf(f, "%s (", stat->path);
-  if (!stat->exists) {
+  size_t written = fprintf(f, "%s (", wstat->path);
+  if (!wstat->exists) {
     WELD_FMT(f, WELD_CFG_FMT_RED);
     written += fputs("E", f);
     WELD_FMT(f, WELD_CFG_FMT_RESET);
@@ -93,22 +89,30 @@ size_t weld_fmtstat(FILE *f, struct weld_stat *stat) {
   }
 
   WELD_FMT(f, WELD_CFG_FMT_YELLOW);
-  fprintf(f, "%o", stat->st.st_mode);
+  fprintf(f, "%o", wstat->st.st_mode);
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
-  struct passwd *pws = getpwuid(stat->st.st_uid);
-  struct group *grp = getgrgid(stat->st.st_gid);
+  struct passwd *pws = getpwuid(wstat->st.st_uid);
+  struct group *grp = getgrgid(wstat->st.st_gid);
 
   WELD_FMT(f, WELD_CFG_FMT_CYAN);
   fprintf(f, " %s %s", pws->pw_name, grp->gr_name);
   WELD_FMT(f, WELD_CFG_FMT_RESET);
 
   // TODO: also check access() here
-  if ((stat->st.st_mode & S_IFMT) == S_IFLNK) {
-    size_t len = readlink(stat->path, pbuf, WELD_PATH_MAX);
+  if ((wstat->st.st_mode & S_IFMT) == S_IFLNK) {
+    size_t len = readlink(wstat->path, pbuf, WELD_PATH_MAX);
     if (len == -1) {
       WELD_FMT(f, WELD_CFG_FMT_RED);
-      fprintf(f, " -> invalid link");
+      written += fputs("-> E", f);
+      WELD_FMT(f, WELD_CFG_FMT_RESET);
+    } else {
+      if (access(wstat->path, F_OK) == 0) {
+        WELD_FMT(f, WELD_CFG_FMT_GREEN);
+      } else {
+        WELD_FMT(f, WELD_CFG_FMT_RED);
+      }
+      fprintf(f, " -> %s", pbuf);
       WELD_FMT(f, WELD_CFG_FMT_RESET);
     }
   }
