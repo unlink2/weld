@@ -50,4 +50,4 @@ clean:
 
 install:
 	cp ./$(BDIR)/$(BNAME) $(BIN_INSTALL_DIR)
-	cp ./doc/$(BNAME) $(MAN_INSTALL_DIR)
+	cp ./doc/$(BNAME).8 $(MAN_INSTALL_DIR)
