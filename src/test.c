@@ -187,6 +187,10 @@ void test_commexec(void) {
   // force replace
   weldcfg.force = true;
   assert_exec("./f0-link.weld", 0, 0, "s:./f0.weld:./f0-link.weld");
+
+  // forcing directory replace should *always* fail
+  // weld will leave it up to the user to remove directories
+  assert_exec("./d0.weld", -1, 0, "s:./f0.weld:./d0.weld");
   weldcfg.force = false;
 
   puts("[exec ok]");
@@ -234,6 +238,8 @@ void weld_test_init(void) {
 
   // link that points nowhere
   assert(symlink("f.weld", "f2-link.weld") != -1);
+
+  assert(mkdir("d0.weld", 0700) != -1);
 
   printf("[test location '%s']\n", path);
 }

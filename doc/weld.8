@@ -1,0 +1,55 @@
+.\" Manpage for weld.
+.\" Contact lukas@krickl.dev to correct errors or typos.
+
+.TH man 8 "29 October 2023" "0.0.1" "weld manual"
+
+.SH NAME
+  weld
+.SH SYNOPSIS
+  weld [-v] [--help] [--version]
+.SH DESCRIPTION
+.B weld
+  A simple symbolic link manager.
+
+  Usage weld [-hvVpdcfes] [commands...]
+
+    -h	display this help and exit
+    -V	display version info and exit
+    -v	verbose output
+    -p	create directories for destination if they are missing
+    -d	perform a dry run (print actions but do not act)
+    -c	confirm before each action is taken
+    -f	force creation even if the destination path already exists
+    -e	perform shell word expansion on input strings
+    -s	skip errors and process next command
+  
+  Weld shall read commands from stdin if stdin is not a tty 
+  or from the command line arguments.
+  Commands are currently one of the following:
+
+.B symlink
+    Create symbolic link.
+    Syntax: s:<src>:<target>
+    The symlink command shall create a new symbolic link if the target file 
+    does not exist. If -f is set, the command shall delete the existing target file (if present)
+    and shall replace it with a new file. If target is a directory and -f is set the command shall fail.
+    Example: s:/tmp:/tmp-link
+  
+
+.SH EXAMPLES
+  
+.B Run a dry run
+    weld -d "s:/tmp:/tmp-link"
+
+.B Run and create links
+    weld "s:/tmp:/tmp-link"
+
+.SH SEE ALSO
+
+.SH BUGS
+
+.SH AUTHOR
+  Lukas Krickl (lukas@krickl.dev)
+
+.SH COPYRIGHT
+  Copyright 2023 Lukas Krickl (lukas@krickl.dev)
