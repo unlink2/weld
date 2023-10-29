@@ -31,7 +31,6 @@ $(ODIR)/%.o: src/%.c
 
 bin: $(OBJ)
 	mkdir -p $(BDIR)
-	echo $(BNAME) $(MAIN)
 	$(CC) -o $(BDIR)/$(BNAME) $^ $(CFLAGS) $(LDFLAGS)
 
 test:
