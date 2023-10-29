@@ -165,6 +165,14 @@ void test_is_same_file(void) {
   puts("[same file ok]");
 }
 
+// test actual command creation
+// this should run last because it will
+// actually create files
+void test_commexec(void) {
+  puts("[exec test]");
+  puts("[exec ok]");
+}
+
 // simplt creates a new file
 int weld_touch(const char *path) {
   int fd =
@@ -224,6 +232,7 @@ int main(int arc, char **argv) {
   test_wordexp();
   test_dry();
   test_is_same_file();
+  test_commexec();
 
   puts("[tests ok]");
   return 0;

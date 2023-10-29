@@ -139,6 +139,10 @@ int weld_fmtstat(FILE *f, const char *path) {
   return written;
 }
 
+#define WELD_COMM_DST_CHK(comm)                                                \
+  !weldcfg.force &&access((comm)->dst, F_OK) != (-1) &&                        \
+      !weld_is_same_file((comm)->src, (comm)->dst)
+
 int weld_commchk(struct weld_comm *comm) {
   if (comm->ok == -1) {
     return -1;
@@ -150,7 +154,6 @@ int weld_commchk(struct weld_comm *comm) {
 
   switch (comm->type) {
   case WELD_COMM_SYMLINK: {
-
     if (display) {
       WELD_FMT(weldout, WELD_CFG_FMT_GREEN);
       fprintf(weldout, "[create symlink] ");
@@ -162,18 +165,15 @@ int weld_commchk(struct weld_comm *comm) {
       weld_fmtstat(weldout, comm->dst);
       fputs("\n", weldout);
     }
-    int src_ok = access(comm->src, F_OK);
-    int dst_exists = access(comm->dst, F_OK);
     // src always has to exists
-    if (src_ok == -1) {
+    if (access(comm->src, F_OK) == -1) {
       fprintf(welderr, "%s\n", strerror(errno));
       return -1;
     }
 
     // dst must not exist if -f is not set
     // but do not error if src and dst are the smae inode
-    if (!weldcfg.force && dst_exists != -1 &&
-        !weld_is_same_file(comm->src, comm->dst)) {
+    if (WELD_COMM_DST_CHK(comm)) {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
       fprintf(welderr, "Error: '%s' exists\n", comm->dst);
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
@@ -185,6 +185,27 @@ int weld_commchk(struct weld_comm *comm) {
     break;
   }
 
+  return 0;
+}
+
+int weld_commexec(struct weld_comm *comm) {
+  switch (comm->type) {
+  case WELD_COMM_SYMLINK:
+    if (WELD_COMM_DST_CHK(comm)) {
+      if (symlink(comm->src, comm->dst) == -1) {
+        WELD_FMT(welderr, WELD_CFG_FMT_RED);
+        fprintf(welderr, "'%s' -> '%s': %s\n", comm->src, comm->dst,
+                strerror(errno));
+        WELD_FMT(welderr, WELD_CFG_FMT_RESET);
+        return -1;
+      }
+    } else if (weldcfg.verbose) {
+      fprintf(welderr, "'%s' already exists. Skipped...\n", comm->dst);
+    }
+    break;
+  default:
+    break;
+  }
   return 0;
 }
 
@@ -200,7 +221,7 @@ int weld_commdo(const char *line) {
     return 0;
   }
 
-  return 0;
+  return weld_commexec(&c);
 }
 
 // next command from in file
