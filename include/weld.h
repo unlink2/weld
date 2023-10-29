@@ -54,6 +54,11 @@ extern FILE *welderr;
   }
 
 struct weld_config {
+  // argv and argc are used
+  // as command strings
+  // they are not interpreted as cli flags
+  // the parsing of cli flags is left up to the caller
+  // of weld_main
   char **argv;
   int argc;
 
@@ -75,7 +80,7 @@ struct weld_config {
   // replace exiting links or files
   bool force;
 
-  // skip errors 
+  // skip errors
   // and continue to next command anyway
   bool skip_errors;
 
@@ -104,7 +109,6 @@ struct weld_comm {
     };
   };
 };
-
 
 // global cfg
 extern struct weld_config weldcfg;
