@@ -6,13 +6,13 @@
 .SH NAME
   weld
 .SH SYNOPSIS
-  weld [-v] [--help] [--version]
+  weld [-hvVpdcfes] [commands...]
+
 .SH DESCRIPTION
 .B weld
   A simple symbolic link manager.
 
-  Usage weld [-hvVpdcfes] [commands...]
-
+  Usage
     -h	display this help and exit
     -V	display version info and exit
     -v	verbose output
@@ -34,7 +34,10 @@
     does not exist. If -f is set, the command shall delete the existing target file (if present)
     and shall replace it with a new file. If target is a directory and -f is set the command shall fail.
     Example: s:/tmp:/tmp-link
-  
+ 
+.B comments
+    Lines starting with a '#' as the first non-whitespace character 
+    are ignored and may be used for documentation purposes.
 
 .SH EXAMPLES
   
