@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define WELD_VERBOSE "WELD_VERBOSE"
+
 #define WELD_BUF_MAX (WELD_PATH_MAX * 3)
 
 #define WELD_COMM_TERM ':'

@@ -139,10 +139,6 @@ int weld_fmtstat(FILE *f, const char *path) {
   return written;
 }
 
-#define WELD_COMM_DST_CHK(comm)                                                \
-  !weldcfg.force &&access((comm)->dst, F_OK) != (-1) &&                        \
-      !weld_is_same_file((comm)->src, (comm)->dst)
-
 int weld_commchk(struct weld_comm *comm) {
   if (comm->ok == -1) {
     return -1;
@@ -173,7 +169,8 @@ int weld_commchk(struct weld_comm *comm) {
 
     // dst must not exist if -f is not set
     // but do not error if src and dst are the smae inode
-    if (WELD_COMM_DST_CHK(comm)) {
+    if (!weldcfg.force && access(comm->dst, F_OK) != -1 &&
+        !weld_is_same_file(comm->src, comm->dst)) {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
       fprintf(welderr, "Error: '%s' exists\n", comm->dst);
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
@@ -191,7 +188,7 @@ int weld_commchk(struct weld_comm *comm) {
 int weld_commexec(struct weld_comm *comm) {
   switch (comm->type) {
   case WELD_COMM_SYMLINK:
-    if (WELD_COMM_DST_CHK(comm)) {
+    if (weldcfg.force || access(comm->dst, F_OK) == -1) {
       if (symlink(comm->src, comm->dst) == -1) {
         WELD_FMT(welderr, WELD_CFG_FMT_RED);
         fprintf(welderr, "'%s' -> '%s': %s\n", comm->src, comm->dst,
@@ -199,8 +196,11 @@ int weld_commexec(struct weld_comm *comm) {
         WELD_FMT(welderr, WELD_CFG_FMT_RESET);
         return -1;
       }
-    } else if (weldcfg.verbose) {
-      fprintf(welderr, "'%s' already exists. Skipped...\n", comm->dst);
+    } else {
+      if (weldcfg.verbose) {
+        fprintf(welderr, "'%s' already exists. Skipped...\n", comm->dst);
+      }
+      return -1;
     }
     break;
   default:
@@ -266,6 +266,7 @@ struct weld_config weld_config_from_env(void) {
   struct weld_config cfg;
   memset(&cfg, 0, sizeof(cfg));
 
+  cfg.verbose = getenv(WELD_VERBOSE) != NULL;
   cfg.color = true;
 
   return cfg;

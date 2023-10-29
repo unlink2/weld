@@ -131,8 +131,8 @@ void test_dry(void) {
              -1, "s:./f.weld:./f-link.weld");
 
   assert_dry("\"[create symlink] ./f0.weld (-r--r--r-- $USER $USER) -> "
-             "./f0-link.wedl (e---------)\n\"",
-             0, "s:./f0.weld:./f0-link.wedl");
+             "./f0-link.weld (e---------)\n\"",
+             0, "s:./f0.weld:./f0-link.weld");
 
   assert_dry("\"[create symlink] ./f2.weld (-r--r--r-- $USER $USER) -> "
              "./f2-link.weld (lrwxrwxrwx $USER $USER -> f.weld)\n\"",
@@ -165,11 +165,25 @@ void test_is_same_file(void) {
   puts("[same file ok]");
 }
 
+#define assert_exec(expect_access, expect_ret, input)                          \
+  {                                                                            \
+    weldcfg.argv = (char *[]){(input)};                                        \
+    weldcfg.argc = 1;                                                          \
+    assert(weld_main(weldcfg) == (expect_ret));                                \
+    assert(access(expect_access, F_OK) != -1);                                 \
+  }
+
 // test actual command creation
 // this should run last because it will
 // actually create files
 void test_commexec(void) {
+  weldcfg.dry = false;
+
   puts("[exec test]");
+
+  assert_exec("./f0-link.weld", 0, "s:./f0.weld:./f0-link.weld");
+  assert_exec("./f0-link.weld", -1, "s:./f0.weld:./f0-link.weld");
+
   puts("[exec ok]");
 }
 
@@ -221,7 +235,6 @@ void weld_test_init(void) {
 
 int main(int arc, char **argv) {
   weld_init(weld_config_from_env());
-  weldcfg.verbose = false;
 
   weld_test_init();
 
