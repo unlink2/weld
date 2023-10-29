@@ -165,12 +165,12 @@ void test_is_same_file(void) {
   puts("[same file ok]");
 }
 
-#define assert_exec(expect_access, expect_ret, input)                          \
+#define assert_exec(expect_access, expect_ret, expect_access_ret, input)       \
   {                                                                            \
     weldcfg.argv = (char *[]){(input)};                                        \
     weldcfg.argc = 1;                                                          \
     assert(weld_main(weldcfg) == (expect_ret));                                \
-    assert(access(expect_access, F_OK) != -1);                                 \
+    assert(access(expect_access, F_OK) == (expect_access_ret));                \
   }
 
 // test actual command creation
@@ -181,8 +181,13 @@ void test_commexec(void) {
 
   puts("[exec test]");
 
-  assert_exec("./f0-link.weld", 0, "s:./f0.weld:./f0-link.weld");
-  assert_exec("./f0-link.weld", -1, "s:./f0.weld:./f0-link.weld");
+  assert_exec("./f0-link.weld", 0, 0, "s:./f0.weld:./f0-link.weld");
+  assert_exec("./f0-link.weld", -1, 0, "s:./f0.weld:./f0-link.weld");
+
+  // force replace
+  weldcfg.force = true;
+  assert_exec("./f0-link.weld", 0, 0, "s:./f0.weld:./f0-link.weld");
+  weldcfg.force = false;
 
   puts("[exec ok]");
 }

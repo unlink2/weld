@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,6 +65,25 @@ bool weld_is_same_file(const char *p1, const char *p2) {
   }
 
   return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+}
+
+bool weld_confirm(const char *questions, ...) {
+  if (!weldcfg.confirm) {
+    return true;
+  }
+
+  va_list args;
+  va_start(args, questions);
+
+  const char *question = questions;
+  while (question) {
+    fprintf(welderr, "%s", question);
+    question = va_arg(args, const char *);
+  }
+  fputs("(y/n)", welderr);
+
+  int c = getc(weldin);
+  return c == 'y';
 }
 
 int weld_fmtstat(FILE *f, const char *path) {
@@ -172,7 +192,7 @@ int weld_commchk(struct weld_comm *comm) {
     if (!weldcfg.force && access(comm->dst, F_OK) != -1 &&
         !weld_is_same_file(comm->src, comm->dst)) {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
-      fprintf(welderr, "Error: '%s' exists\n", comm->dst);
+      fprintf(welderr, "'%s': File exists\n", comm->dst);
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
@@ -188,7 +208,22 @@ int weld_commchk(struct weld_comm *comm) {
 int weld_commexec(struct weld_comm *comm) {
   switch (comm->type) {
   case WELD_COMM_SYMLINK:
-    if (weldcfg.force || access(comm->dst, F_OK) == -1) {
+    if (weldcfg.force && access(comm->dst, F_OK) == 0 &&
+        weld_confirm(comm->dst, " will be removed! Are you sure? ", NULL)) {
+      if (weldcfg.verbose) {
+        fprintf(welderr, "rm '%s'\n", comm->dst);
+      }
+      if (unlink(comm->dst) == -1) {
+        fprintf(welderr, "'%s': %s\n", comm->dst, strerror(errno));
+        return -1;
+      }
+    }
+
+    if (access(comm->dst, F_OK) == -1) {
+      if (weldcfg.verbose) {
+        fprintf(welderr, "linking '%s' -> '%s'\n", comm->src, comm->dst);
+      }
+
       if (symlink(comm->src, comm->dst) == -1) {
         WELD_FMT(welderr, WELD_CFG_FMT_RED);
         fprintf(welderr, "'%s' -> '%s': %s\n", comm->src, comm->dst,
@@ -198,7 +233,7 @@ int weld_commexec(struct weld_comm *comm) {
       }
     } else {
       if (weldcfg.verbose) {
-        fprintf(welderr, "'%s' already exists. Skipped...\n", comm->dst);
+        fprintf(welderr, "'%s': File exists. Skipped...\n", comm->dst);
       }
       return -1;
     }
@@ -272,7 +307,7 @@ struct weld_config weld_config_from_env(void) {
   return cfg;
 }
 
-const char *wled_worderr(int worderr) {
+const char *weld_worderr(int worderr) {
   switch (worderr) {
   case WRDE_BADCHAR:
     return "Unquoted character";
@@ -297,7 +332,7 @@ char **weld_wordexp(const char *line, size_t *len) {
 
   int worderr = wordexp(line, &p, WRDE_NOCMD);
   if (worderr != 0) {
-    fprintf(welderr, "wordexp failed: %s\n", wled_worderr(worderr));
+    fprintf(welderr, "wordexp failed: %s\n", weld_worderr(worderr));
     goto FAIL;
   }
 
