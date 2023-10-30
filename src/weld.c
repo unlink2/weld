@@ -404,8 +404,10 @@ int weld_commtok(char *dst, const char *src, size_t len) {
   }
 
   if (*src && *src != WELD_COMM_TERM) {
+    WELD_FMT(welderr, WELD_CFG_FMT_RED);
     fprintf(welderr, "The supplied buffer did not provide enough memory to fit "
                      "the entire token!\n");
+    WELD_FMT(welderr, WELD_CFG_FMT_RESET);
     return -1;
   }
 
@@ -468,7 +470,9 @@ struct weld_comm weld_commfrom(const char *line) {
     }
     break;
   default:
+    WELD_FMT(welderr, WELD_CFG_FMT_RED);
     fprintf(welderr, "Unknown command type: '%c'\n", typebuf[0]);
+    WELD_FMT(welderr, WELD_CFG_FMT_RESET);
     goto FAIL;
   }
 
@@ -476,6 +480,8 @@ SKIP_COMMENT:
   comm.ok = 0;
   return comm;
 FAIL:
+  WELD_FMT(welderr, WELD_CFG_FMT_RED);
   fprintf(welderr, "Parsing command '%s' failed\n", line_start);
+  WELD_FMT(welderr, WELD_CFG_FMT_RESET);
   return comm;
 }
