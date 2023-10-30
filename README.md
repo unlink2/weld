@@ -13,14 +13,17 @@ in a maintainable way
 
 ## Installation
 
-To build this program you will require a recent C compiler, make, `libargtable2` and `libcmocka` for unit tests.
+To build this program you will require a recent C compiler and make.
 
 ```sh
-premake gmake # to build gnu make file 
-make # to compile all targets 
+make # build all ragets
+./script/test.sh # run tests 
+WELD_VERBOSE="1" ./script/test.sh # run tests with verbose output
 ```
 
 ## Usage
+
+For a detailed manuals you can use the included [manual page](./doc/weld.8).
 
 ## License
 
