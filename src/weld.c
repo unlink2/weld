@@ -286,6 +286,15 @@ int weld_fcommnext(void) {
 }
 
 int weld_commnext(char *buf, size_t buflen) {
+  // handle comments before wordexpand to prevent expanding lines starting with
+  // #
+  for (size_t i = 0;
+       i < buflen && (isspace(buf[i]) || buf[i] == WELD_COMM_COMMENT); i++) {
+    if (buf[i] == WELD_COMM_COMMENT) {
+      return 0;
+    }
+  }
+
   if (weldcfg.expand) {
     size_t len = 0;
     char **expanded = weld_wordexp(buf, &len);
