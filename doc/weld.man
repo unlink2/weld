@@ -1,7 +1,7 @@
 .\" Manpage for weld.
 .\" Contact lukas@krickl.dev to correct errors or typos.
 
-.TH man 8 "29 October 2023" "0.0.1" "weld manual"
+.TH man 1 "29 October 2023" "0.0.1" "weld manual"
 
 .SH NAME
   weld
