@@ -9,10 +9,8 @@
   weld [-hvVpdcfes] [commands...]
 
 .SH DESCRIPTION
-.B weld
   A simple symbolic link manager.
 
-  Usage
     -h	display this help and exit
     -V	display version info and exit
     -v	verbose output
@@ -22,6 +20,8 @@
     -f	force creation even if the destination path already exists
     -e	perform shell word expansion on input strings
     -s	skip errors and process next command
+    -i	Specify input file
+    -o	Specify output file
   
   Weld shall read commands from stdin if stdin is not a tty 
   or from the command line arguments.
