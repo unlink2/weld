@@ -183,7 +183,9 @@ int weld_commchk(struct weld_comm *comm) {
     }
     // src always has to exists
     if (access(comm->src, F_OK) == -1) {
-      fprintf(welderr, "%s\n", strerror(errno));
+      WELD_FMT(welderr, WELD_CFG_FMT_RED);
+      fprintf(welderr, "'%s': %s\n", comm->src, strerror(errno));
+      WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
 
@@ -214,7 +216,9 @@ int weld_commexec(struct weld_comm *comm) {
         fprintf(welderr, "rm '%s'\n", comm->dst);
       }
       if (unlink(comm->dst) == -1) {
+        WELD_FMT(welderr, WELD_CFG_FMT_RED);
         fprintf(welderr, "'%s': %s\n", comm->dst, strerror(errno));
+        WELD_FMT(welderr, WELD_CFG_FMT_RESET);
         return -1;
       }
     }
