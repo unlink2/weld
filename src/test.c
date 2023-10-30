@@ -251,6 +251,10 @@ void weld_test_init(void) {
 int main(int arc, char **argv) {
   weld_init(weld_config_from_env());
 
+  if (!weldcfg.verbose) {
+    fclose(stderr);
+  }
+
   weld_test_init();
 
   puts("[tests]");
