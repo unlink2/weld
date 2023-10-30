@@ -231,10 +231,18 @@ int weld_commexec(struct weld_comm *comm) {
         WELD_FMT(welderr, WELD_CFG_FMT_RESET);
         return -1;
       }
-    } else {
+    } else if (weld_is_same_file(comm->src, comm->dst)) {
       if (weldcfg.verbose) {
+        WELD_FMT(welderr, WELD_CFG_FMT_GREEN);
         fprintf(welderr, "'%s': File exists. Skipped...\n", comm->dst);
+        WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       }
+      return 0;
+    } else {
+      WELD_FMT(welderr, WELD_CFG_FMT_RED);
+      fprintf(welderr, "'%s': File exists, but is not the expected link\n",
+              comm->dst);
+      WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
     break;

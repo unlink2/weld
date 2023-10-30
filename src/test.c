@@ -182,7 +182,11 @@ void test_commexec(void) {
   puts("[exec test]");
 
   assert_exec("./f0-link.weld", 0, 0, "s:./f0.weld:./f0-link.weld");
-  assert_exec("./f0-link.weld", -1, 0, "s:./f0.weld:./f0-link.weld");
+  // should be ok, because f0-link is already the expected link
+  assert_exec("./f0-link.weld", 0, 0, "s:./f0.weld:./f0-link.weld");
+
+  // should fail because f0-link does not point to f3
+  assert_exec("./f0-link.weld", -1, 0, "s:./f3.weld:./f0-link.weld");
 
   // force replace
   weldcfg.force = true;
