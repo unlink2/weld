@@ -62,6 +62,9 @@ struct weld_config {
   char **argv;
   int argc;
 
+  int mkdir_mode;
+
+
   bool verbose;
 
   // run dry mode only when this is true

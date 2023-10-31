@@ -324,6 +324,7 @@ struct weld_config weld_config_from_env(void) {
 
   cfg.verbose = getenv(WELD_VERBOSE) != NULL;
   cfg.color = true;
+  cfg.mkdir_mode = 0777;
 
   return cfg;
 }
