@@ -373,20 +373,36 @@ FAIL:
 int weld_mkdirp(const char *path, int mode) {
   char *dup = strdup(path);
   char *dirc = dirname(dup);
+  int rc = 0;
 
   // we are at the start of the tree...
   if (strncmp(path, dirc, WELD_PATH_MAX) != 0) {
     if (weld_mkdirp(dirc, mode) != 0) {
-      return -1;
+      rc = -1;
+      goto END;
     }
   }
 
-  int rc = mkdir(dirc, mode);
-
-  if (rc == -1) {
-    fprintf(welderr, "%s: %s\n", dirc, strerror(errno));
+  if (strncmp(dirc, ".", WELD_PATH_MAX) == 0 ||
+      strncmp(dirc, "/", WELD_PATH_MAX) == 0 ||
+      strncmp(dirc, "..", WELD_PATH_MAX) == 0) {
+    goto END;
   }
 
+  if (weldcfg.verbose) {
+    fprintf(welderr, "mkdir '%s'\n", dirc);
+  }
+  puts(dirc);
+
+  rc = mkdir(dirc, mode);
+
+  if (rc == -1 && errno != EEXIST) {
+    fprintf(welderr, "%s: %s\n", dirc, strerror(errno));
+  } else {
+    rc = 0;
+  }
+
+END:
   free(dup);
 
   return rc;

@@ -137,6 +137,11 @@ bool weld_is_same_file(const char *p1, const char *p2);
 // using free(2)
 char **weld_wordexp(const char *line, size_t *len);
 void weld_wordexp_free(char **lines, size_t len);
+
+/**
+ * Creates all parents of the requested input path
+ * if the parent already exists, no action is taken
+ */
 int weld_mkdirp(const char *path, int mode);
 
 // creates a command from a line
