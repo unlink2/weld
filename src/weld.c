@@ -10,6 +10,7 @@
 #include <wordexp.h>
 #include <pwd.h>
 #include <grp.h>
+#include <libgen.h>
 
 FILE *weldin = NULL;
 FILE *weldout = NULL;
@@ -367,6 +368,28 @@ char **weld_wordexp(const char *line, size_t *len) {
 FAIL:
   wordfree(&p);
   return w;
+}
+
+int weld_mkdirp(const char *path, int mode) {
+  char *dup = strdup(path);
+  char *dirc = dirname(dup);
+
+  // we are at the start of the tree...
+  if (strncmp(path, dirc, WELD_PATH_MAX) != 0) {
+    if (weld_mkdirp(dirc, mode) != 0) {
+      return -1;
+    }
+  }
+
+  int rc = mkdir(dirc, mode);
+
+  if (rc == -1) {
+    fprintf(welderr, "%s: %s\n", dirc, strerror(errno));
+  }
+
+  free(dup);
+
+  return rc;
 }
 
 void weld_wordexp_free(char **lines, size_t len) {
