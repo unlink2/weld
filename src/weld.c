@@ -392,7 +392,6 @@ int weld_mkdirp(const char *path, int mode) {
   if (weldcfg.verbose) {
     fprintf(welderr, "mkdir '%s'\n", dirc);
   }
-  puts(dirc);
 
   rc = mkdir(dirc, mode);
 
