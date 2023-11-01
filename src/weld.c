@@ -371,8 +371,19 @@ FAIL:
 }
 
 int weld_mkdirp(const char *path, int mode) {
-  char *dup = strdup(path);
+  char dup[WELD_PATH_MAX];
+  strncpy(dup, path, WELD_PATH_MAX);
+
   char *dirc = dirname(dup);
+
+  // dirname could return static memory
+  // so cpy just in case
+  // to allow recursion here without worrying about clobbering dirc
+  if (dirc != dup) {
+    strncpy(dup, dirc, WELD_PATH_MAX);
+    dirc = dup;
+  }
+
   int rc = 0;
 
   // we are at the start of the tree...
@@ -402,8 +413,6 @@ int weld_mkdirp(const char *path, int mode) {
   }
 
 END:
-  free(dup);
-
   return rc;
 }
 

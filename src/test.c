@@ -204,12 +204,22 @@ void test_commexec(void) {
   puts("[exec ok]");
 }
 
+// FIXME:
+// this is a bit bad, because this test will influence commexec
+// which relies on the directories created here to exist...
+// maybe we can fix this in the future
 void test_mkdirp(void) {
   puts("[mkdirp test]");
   // file will not be created, because this *only* mkdirs the actual parents
   // of whatever path is input
   assert(weld_mkdirp("d1.weld/d2.weld/d3.weld/file", 0777) == 0);
+  assert(access("d1.weld/d2.weld/d3.weld/", F_OK) == 0);
+  assert(access("d1.weld/d2.weld/d3.weld/file", F_OK) == -1);
+
+  // should not create file if string does not end in /
   assert(weld_mkdirp("d1.weld/d2.weld/d3.weld/d4.weld/file", 0777) == 0);
+  assert(access("d1.weld/d2.weld/d3.weld/d4.weld", F_OK) == 0);
+  assert(access("d1.weld/d2.weld/d3.weld/d4.weld/file", F_OK) == -1);
   puts("[mkdirp ok]");
 }
 
