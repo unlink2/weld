@@ -197,11 +197,16 @@ void test_commexec(void) {
   // should be ok, because f0-link is already the expected link
   assert_exec("./f0-link.weld", 0, 0, "s:./f0.weld:./f0-link.weld");
 
+  // should fail because the directoty does not exist
+  assert_exec(
+      "./f0-link.weld", -1, 0,
+      "s:./f0.weld:./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld");
+
   // these dirs should exists because of mkdir earlier
   weldcfg.mkdirs = true;
   assert_exec(
-      "./f0-link.weld", 0, 0,
-      "s:./f0.weld:./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld");
+      "./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld", 0, 0,
+      "s:.:./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld");
   weldcfg.mkdirs = false;
 
   // should fail because f0-link does not point to f3
