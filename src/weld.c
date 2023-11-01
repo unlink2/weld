@@ -406,6 +406,11 @@ int weld_mkdirp(const char *path, int mode) {
     goto END;
   }
 
+  if (!weld_confirm("The directory '", dirc,
+                    "' will be created! Are you sure? ", NULL)) {
+    return -1;
+  }
+
   if (weldcfg.verbose) {
     fprintf(welderr, "mkdir '%s' mode %o\n", dirc, mode);
   }
