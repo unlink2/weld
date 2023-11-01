@@ -211,6 +211,12 @@ int weld_commchk(struct weld_comm *comm) {
 int weld_commexec(struct weld_comm *comm) {
   switch (comm->type) {
   case WELD_COMM_SYMLINK:
+    if (weldcfg.mkdirs) {
+      if (weld_mkdirp(comm->dst, weldcfg.mkdir_mode) == -1) {
+        return -1;
+      }
+    }
+
     if (weldcfg.force && access(comm->dst, F_OK) == 0 &&
         weld_confirm(comm->dst, " will be removed! Are you sure? ", NULL)) {
       if (weldcfg.verbose) {
