@@ -212,7 +212,7 @@ int weld_commexec(struct weld_comm *comm) {
   switch (comm->type) {
   case WELD_COMM_SYMLINK:
     if (weldcfg.mkdirs) {
-      if (weld_mkdirp(comm->dst, weldcfg.mkdir_mode) == -1) {
+      if (weld_mkdirp(comm->dst, weldcfg.file_mode) == -1) {
         return -1;
       }
     }
@@ -331,7 +331,7 @@ struct weld_config weld_config_from_env(void) {
 
   cfg.verbose = getenv(WELD_VERBOSE) != NULL;
   cfg.color = true;
-  cfg.mkdir_mode = 0777;
+  cfg.file_mode = 0777;
 
   return cfg;
 }
@@ -407,7 +407,7 @@ int weld_mkdirp(const char *path, int mode) {
   }
 
   if (weldcfg.verbose) {
-    fprintf(welderr, "mkdir '%s'\n", dirc);
+    fprintf(welderr, "mkdir '%s' mode %o\n", dirc, mode);
   }
 
   rc = mkdir(dirc, mode);
@@ -428,6 +428,19 @@ void weld_wordexp_free(char **lines, size_t len) {
   }
 
   free(lines);
+}
+
+int weld_strtoi(int *dst, char *str, int base) {
+  size_t len = strlen(str);
+  char *end = NULL;
+
+  *dst = (int)strtol(str, &end, base);
+
+  if (end != str + len) {
+    return -1;
+  }
+
+  return 0;
 }
 
 int weld_commtok(char *dst, const char *src, size_t len) {

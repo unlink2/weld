@@ -6,7 +6,7 @@
 .SH NAME
   weld
 .SH SYNOPSIS
-  weld [-hvVpdcfes] [commands...]
+  weld [-hvVpdcfes] [-m=<mode>] [-i=<file>] [-o=<file>] [commands...]
 
 .SH DESCRIPTION
   A simple symbolic link manager.
@@ -20,8 +20,9 @@
     -f	force creation even if the destination path already exists
     -e	perform shell word expansion on input strings
     -s	skip errors and process next command
-    -i	Specify input file
-    -o	Specify output file
+    -i	specify input file
+    -o	specify output file
+    -m	specify file mode (e.g. 755)
   
   Weld shall read commands from stdin if stdin is not a tty 
   or from the command line arguments.

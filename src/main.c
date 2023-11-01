@@ -7,12 +7,12 @@
 #define WELD_NAME "weld"
 #define WELD_VER "0.0.1"
 #define WELD_OPTS "hvVpdcfes"
-#define WELD_OPTS_ARGS "i:o:"
+#define WELD_OPTS_ARGS "i:o:m:"
 
 void weld_help(void) {
   printf("%s\n", WELD_NAME);
-  printf("Usage %s [-%s] [-i=<file>] [-o=<file>] [commands...]\n\n", WELD_NAME,
-         WELD_OPTS);
+  printf("Usage %s [-%s] [-m=<mode>] [-i=<file>] [-o=<file>] [commands...]\n\n",
+         WELD_NAME, WELD_OPTS);
   printf("\t-h\tdisplay this help and exit\n");
   printf("\t-V\tdisplay version info and exit\n");
   printf("\t-v\tverbose output\n");
@@ -22,8 +22,9 @@ void weld_help(void) {
   printf("\t-f\tforce creation even if the destination path already exists\n");
   printf("\t-e\tperform shell word expansion on input strings\n");
   printf("\t-s\tskip errors and process next command\n");
-  printf("\t-i\tSpecify input file\n");
-  printf("\t-o\tSpecify output file\n");
+  printf("\t-i\tspecify input file\n");
+  printf("\t-o\tspecify output file\n");
+  printf("\t-m\tspecify file mode (e.g. 755)\n");
 }
 
 void weld_version(void) { printf("%s version %s\n", WELD_NAME, WELD_VER); }
@@ -72,6 +73,12 @@ void weld_getopt(int argc, char **argv, struct weld_config *cfg) {
       weldout = fopen(optarg, "we");
       if (!weldout) {
         perror(optarg);
+        exit(-1);
+      }
+      break;
+    case 'm':
+      if (weld_strtoi(&cfg->file_mode, optarg, 8) == -1) {
+        fprintf(stderr, "%s is not a valid file mode!\n", optarg);
         exit(-1);
       }
       break;

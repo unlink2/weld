@@ -62,7 +62,7 @@ struct weld_config {
   char **argv;
   int argc;
 
-  int mkdir_mode;
+  int file_mode;
 
   bool verbose;
 
@@ -150,5 +150,11 @@ struct weld_comm weld_commfrom(const char *line);
 // writes the next token into dst and returns the number of bytes read
 // returns -1 on error (e.g. if dst's size is insufficient)
 int weld_commtok(char *dst, const char *src, size_t len);
+
+// converts a string to an int of a given base
+// returns 0 on success or -1 on failure
+// also returns -1 if not the entire string can be converted
+// to a number
+int weld_strtoi(int *dst, char *str, int base);
 
 #endif

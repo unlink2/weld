@@ -12,6 +12,18 @@
   assert(weld_commtok((buf), (src), (len)) == (expect_read));                  \
   assert(strcmp((expect_str), (buf)) == 0);
 
+void test_strtoi(void) {
+  puts("[strtoi test]");
+  int t = 0;
+
+  assert(weld_strtoi(&t, "123", 10) == 0);
+  assert(t == 123);
+
+  assert(weld_strtoi(&t, "123a", 10) == -1);
+
+  puts("[strtoi ok]");
+}
+
 void test_commpath(void) {
   puts("[commpath test]");
 
@@ -281,6 +293,7 @@ int main(int arc, char **argv) {
 
   puts("[tests]");
 
+  test_strtoi();
   test_commpath();
   test_commfrom();
   test_wordexp();
