@@ -207,10 +207,6 @@ void test_commexec(void) {
   puts("[exec ok]");
 }
 
-// FIXME:
-// this is a bit bad, because this test will influence commexec
-// which relies on the directories created here to exist...
-// maybe we can fix this in the future
 void test_mkdirp(void) {
   puts("[mkdirp test]");
   // file will not be created, because this *only* mkdirs the actual parents
