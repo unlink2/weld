@@ -176,26 +176,26 @@ int weld_commchk(struct weld_comm *comm) {
       fprintf(weldout, "[create symlink] ");
       WELD_FMT(weldout, WELD_CFG_FMT_RESET);
 
-      weld_fmtstat(weldout, comm->src);
+      weld_fmtstat(weldout, comm->ct.sl.src);
       fputs(" -> ", weldout);
 
-      weld_fmtstat(weldout, comm->dst);
+      weld_fmtstat(weldout, comm->ct.sl.dst);
       fputs("\n", weldout);
     }
     // src always has to exists
-    if (access(comm->src, F_OK) == -1) {
+    if (access(comm->ct.sl.src, F_OK) == -1) {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
-      fprintf(welderr, "'%s': %s\n", comm->src, strerror(errno));
+      fprintf(welderr, "'%s': %s\n", comm->ct.sl.src, strerror(errno));
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
 
     // dst must not exist if -f is not set
     // but do not error if src and dst are the smae inode
-    if (!weldcfg.force && access(comm->dst, F_OK) != -1 &&
-        !weld_is_same_file(comm->src, comm->dst)) {
+    if (!weldcfg.force && access(comm->ct.sl.dst, F_OK) != -1 &&
+        !weld_is_same_file(comm->ct.sl.src, comm->ct.sl.dst)) {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
-      fprintf(welderr, "'%s': File exists\n", comm->dst);
+      fprintf(welderr, "'%s': File exists\n", comm->ct.sl.dst);
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
@@ -212,47 +212,49 @@ int weld_commexec(struct weld_comm *comm) {
   switch (comm->type) {
   case WELD_COMM_SYMLINK:
     if (weldcfg.mkdirs) {
-      if (weld_mkdirp(comm->dst, weldcfg.file_mode) == -1) {
+      if (weld_mkdirp(comm->ct.sl.dst, weldcfg.file_mode) == -1) {
         return -1;
       }
     }
 
-    if (weldcfg.force && access(comm->dst, F_OK) == 0 &&
-        weld_confirm(comm->dst, " will be removed! Are you sure? ", NULL)) {
+    if (weldcfg.force && access(comm->ct.sl.dst, F_OK) == 0 &&
+        weld_confirm(comm->ct.sl.dst, " will be removed! Are you sure? ",
+                     NULL)) {
       if (weldcfg.verbose) {
-        fprintf(welderr, "rm '%s'\n", comm->dst);
+        fprintf(welderr, "rm '%s'\n", comm->ct.sl.dst);
       }
-      if (unlink(comm->dst) == -1) {
+      if (unlink(comm->ct.sl.dst) == -1) {
         WELD_FMT(welderr, WELD_CFG_FMT_RED);
-        fprintf(welderr, "'%s': %s\n", comm->dst, strerror(errno));
+        fprintf(welderr, "'%s': %s\n", comm->ct.sl.dst, strerror(errno));
         WELD_FMT(welderr, WELD_CFG_FMT_RESET);
         return -1;
       }
     }
 
-    if (access(comm->dst, F_OK) == -1) {
+    if (access(comm->ct.sl.dst, F_OK) == -1) {
       if (weldcfg.verbose) {
-        fprintf(welderr, "linking '%s' -> '%s'\n", comm->src, comm->dst);
+        fprintf(welderr, "linking '%s' -> '%s'\n", comm->ct.sl.src,
+                comm->ct.sl.dst);
       }
 
-      if (symlink(comm->src, comm->dst) == -1) {
+      if (symlink(comm->ct.sl.src, comm->ct.sl.dst) == -1) {
         WELD_FMT(welderr, WELD_CFG_FMT_RED);
-        fprintf(welderr, "'%s' -> '%s': %s\n", comm->src, comm->dst,
+        fprintf(welderr, "'%s' -> '%s': %s\n", comm->ct.sl.src, comm->ct.sl.dst,
                 strerror(errno));
         WELD_FMT(welderr, WELD_CFG_FMT_RESET);
         return -1;
       }
-    } else if (weld_is_same_file(comm->src, comm->dst)) {
+    } else if (weld_is_same_file(comm->ct.sl.src, comm->ct.sl.dst)) {
       if (weldcfg.verbose) {
         WELD_FMT(welderr, WELD_CFG_FMT_GREEN);
-        fprintf(welderr, "'%s': File exists. Skipped...\n", comm->dst);
+        fprintf(welderr, "'%s': File exists. Skipped...\n", comm->ct.sl.dst);
         WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       }
       return 0;
     } else {
       WELD_FMT(welderr, WELD_CFG_FMT_RED);
       fprintf(welderr, "'%s': File exists, but is not the expected link\n",
-              comm->dst);
+              comm->ct.sl.dst);
       WELD_FMT(welderr, WELD_CFG_FMT_RESET);
       return -1;
     }
@@ -534,20 +536,20 @@ struct weld_comm weld_commfrom(const char *line) {
   case WELD_COMM_SYMLINK:
     comm.type = WELD_COMM_SYMLINK;
     line += read;
-    read = weld_commtok(comm.src, line, WELD_PATH_MAX);
+    read = weld_commtok(comm.ct.sl.src, line, WELD_PATH_MAX);
     if (read <= 0) {
       goto FAIL;
     }
 
     line += read;
-    read = weld_commtok(comm.dst, line, WELD_PATH_MAX);
+    read = weld_commtok(comm.ct.sl.dst, line, WELD_PATH_MAX);
     if (read <= 0) {
       goto FAIL;
     }
 
     if (weldcfg.verbose) {
       fprintf(welderr, "[commfrom] read symlink with src: '%s' and dst: '%s'\n",
-              comm.src, comm.dst);
+              comm.ct.sl.src, comm.ct.sl.dst);
     }
     break;
   default:

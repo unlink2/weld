@@ -53,8 +53,8 @@ void test_commpath(void) {
     struct weld_comm c = weld_commfrom((line));                                \
     assert((expect_ok) == c.ok);                                               \
     assert((WELD_COMM_SYMLINK) == c.type);                                     \
-    assert(strcmp((expect_src), c.src) == 0);                                  \
-    assert(strcmp((expect_dst), c.dst) == 0);                                  \
+    assert(strcmp((expect_src), c.ct.sl.src) == 0);                            \
+    assert(strcmp((expect_dst), c.ct.sl.dst) == 0);                            \
   }
 
 #define assert_commfrom_nop(line, expect_ok)                                   \
@@ -204,9 +204,8 @@ void test_commexec(void) {
 
   // these dirs should exists because of mkdir earlier
   weldcfg.mkdirs = true;
-  assert_exec(
-      "./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld", 0, 0,
-      "s:.:./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld");
+  assert_exec("./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld", 0, 0,
+              "s:.:./d5.weld/d6.weld/d7.weld/d8.weld/f0-link-nested.weld");
   weldcfg.mkdirs = false;
 
   // should fail because f0-link does not point to f3

@@ -108,8 +108,8 @@ struct weld_comm {
     struct {
       char src[WELD_PATH_MAX];
       char dst[WELD_PATH_MAX];
-    };
-  };
+    } sl;
+  } ct;
 };
 
 // global cfg
