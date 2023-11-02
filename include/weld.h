@@ -100,16 +100,22 @@ enum weld_comms {
   WELD_COMM_SYMLINK = 's'
 };
 
+// symlink data
+struct weld_comm_sl {
+  char src[WELD_PATH_MAX];
+  char dst[WELD_PATH_MAX];
+};
+
+// command type data
+union weld_comm_ct {
+  // type symlink
+  struct weld_comm_sl sl;
+};
+
 struct weld_comm {
   int ok;
   enum weld_comms type;
-  union {
-    // type symlink
-    struct {
-      char src[WELD_PATH_MAX];
-      char dst[WELD_PATH_MAX];
-    } sl;
-  } ct;
+  union weld_comm_ct ct;
 };
 
 // global cfg
